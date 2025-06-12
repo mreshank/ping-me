@@ -1,0 +1,38 @@
+{
+  "name": "@ping-me/hono",
+  "version": "1.0.0",
+  "description": "Hono adapter for ping-me",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ping",
+    "hono",
+    "uptime",
+    "monitor"
+  ],
+  "author": "Reshank Maharaj",
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "@ping-me/core": "workspace:*",
+    "hono": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "hono": ">=3.0.0"
+  }
+} 
