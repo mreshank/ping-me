@@ -37,7 +37,7 @@ packages/
   express/
   next/
   fastify/
-apps/
+app/
   dashboard/    # Next.js + Tailwind UI for metrics + settings
   api/          # REST API for ping logging and analytics
 ``` 
@@ -74,8 +74,8 @@ pnpm turbo run test       # Run tests
 ```
 
 ### Folder Structure
-- `apps/dashboard` – frontend (Next.js)
-- `apps/api` – metrics API routes
+- `app/dashboard` – frontend (Next.js)
+- `app/api` – metrics API routes
 - `packages/` – core + integrations
 
 ### Before PR

@@ -230,7 +230,7 @@ const pingMe = new PingMe({
 
 ```
 ping-me/
-├── apps/
+├── app/
 │   └── dashboard/        # Web dashboard (Next.js)
 ├── packages/
 │   ├── core/             # Core ping functionality

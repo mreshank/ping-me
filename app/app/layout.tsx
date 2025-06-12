@@ -2,6 +2,7 @@ import React from 'react';
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ThemeProvider } from '../dashboard/app/components/theme-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +24,6 @@ export const metadata: Metadata = {
     title: 'Ping-Me - Keep Your Backends Alive',
     description: 'Monitor your backend services with automatic pinging to prevent sleep cycles on free hosting platforms.',
   }
-
 };
 
 export default function RootLayout({
@@ -32,10 +32,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body className={inter.className}>
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
-} 
+}

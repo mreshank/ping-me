@@ -2,19 +2,19 @@
   "version": 2,
   "builds": [
     {
-      "src": "apps/dashboard",
+      "src": "app/dashboard",
       "use": "@vercel/next",
       "config": {
         "buildCommand": "pnpm build",
         "outputDirectory": ".next",
-        "rootDirectory": "apps/dashboard"
+        "rootDirectory": "app/dashboard"
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/apps/dashboard/$1"
+      "dest": "/app/dashboard/$1"
     }
   ],
   "env": {

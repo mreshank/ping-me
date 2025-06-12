@@ -66,13 +66,15 @@ export function withPingMe(
     
     // Start pinging
     const pingMe = new PingMe({
-      urls: [pingUrl],
-      interval,
-      onPing: log ? console.log : () => {},
       apiKey,
-      apiEndpoint,
+      pingInterval: interval,
+      onSuccess: log ? (endpoint, responseTime) => console.log(`✅ Pinged ${endpoint} in ${responseTime}ms`) : undefined,
+      onError: log ? (error, endpoint) => console.error(`❌ Failed to ping ${endpoint}: ${error.message}`) : undefined,
+      autoStart: false
     });
     
+    // Register the endpoint and start pinging
+    pingMe.register(pingUrl);
     pingMe.start();
     
     return {
