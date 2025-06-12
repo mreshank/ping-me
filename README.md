@@ -363,6 +363,5 @@ Currently, we support:
 - Fastify
 - Koa (coming soon)
 - Hono (coming soon)
-- Metrics Server (coming soon)
 
 But the core package works with any HTTP server!
