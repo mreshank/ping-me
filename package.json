@@ -1,0 +1,36 @@
+{
+  "name": "ping-me",
+  "version": "1.0.0",
+  "description": "Keep your free tier backends alive with auto-pinging and monitoring",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "rm -rf node_modules && rm -rf **/node_modules && rm -rf **/dist",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "changeset": "changeset",
+    "release": "turbo run build && changeset publish"
+  },
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend"
+  ],
+  "author": "Reshank Maharaj",
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "tsx": "^4.19.4",
+    "vitest": "^3.2.3",
+    "eslint": "^9.28.0",
+    "prettier": "^3.5.3",
+    "@changesets/cli": "^2.26.2"
+  }
+}

@@ -1,0 +1,1 @@
+/* Log API route for storing ping metrics */
