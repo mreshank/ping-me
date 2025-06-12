@@ -38,9 +38,9 @@ This project uses Turborepo to manage a monorepo with multiple packages:
 - `packages/express`, `packages/next`, etc.: Framework-specific adapters
 - `packages/cli`: CLI tool
 - `packages/metrics-server`: Standalone metrics server
-- `apps/dashboard`: Next.js dashboard application
-- `apps/api`: Backend API services
-- `apps/examples`: Example applications showcasing usage
+- `app/dashboard`: Next.js dashboard application
+- `app/api`: Backend API services
+- `app/examples`: Example applications showcasing usage
 
 ## 🛠️ Development Workflow
 
