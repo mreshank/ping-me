@@ -14,6 +14,12 @@ export type PingMeOptions = {
   apiKey?: string;
   apiEndpoint?: string;
   onResult?: (result: PingResult) => void;
+  method?: 'GET' | 'HEAD';
+  timeout?: number;
+  headers?: Record<string, string>;
+  retryCount?: number;
+  retryDelay?: number;
+  httpAgent?: any;
 };
 
 /**
@@ -28,13 +34,34 @@ export function pingMe({
   apiKey,
   apiEndpoint = 'https://ping-me-api.vercel.app/api/log',
   onResult,
+  method = 'HEAD',
+  timeout = 10000,
+  headers = {},
+  retryCount = 2,
+  retryDelay = 1000,
+  httpAgent = undefined
 }: PingMeOptions): () => void {
-  const intervalId = setInterval(async () => {
+  const intervalId = setInterval(() => pingOnce(), interval);
+  
+  log(`[ping-me] Started pinging ${url} every ${interval / 1000}s`);
+
+  async function pingOnce(attemptNumber = 0): Promise<void> {
     const startTime = Date.now();
     let result: PingResult;
 
     try {
-      const response = await fetch(url);
+      const fetchOptions: RequestInit = {
+        method,
+        headers: {
+          'Accept': '*/*',
+          'Connection': 'keep-alive',
+          ...headers
+        },
+        signal: AbortSignal.timeout(timeout),
+        ...(httpAgent ? { agent: httpAgent } : {})
+      };
+
+      const response = await fetch(url, fetchOptions);
       const endTime = Date.now();
       const responseTime = endTime - startTime;
       
@@ -47,23 +74,30 @@ export function pingMe({
       log(`[ping-me] Pinged ${url}: ${response.status} (${responseTime}ms)`);
     } catch (error) {
       const endTime = Date.now();
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (attemptNumber < retryCount && isRetryableError(error)) {
+        log(`[ping-me] Ping failed, retrying (${attemptNumber + 1}/${retryCount}):`, errorMessage);
+        
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        
+        return pingOnce(attemptNumber + 1);
+      }
       
       result = {
         status: 0,
         responseTime: endTime - startTime,
         timestamp: endTime,
-        error: error instanceof Error ? error.message : String(error),
+        error: errorMessage,
       };
       
       log(`[ping-me] Ping failed:`, error);
     }
 
-    // Call the optional onResult handler
     if (onResult) {
       onResult(result);
     }
 
-    // Report to API if apiKey is provided
     if (apiKey && apiEndpoint) {
       try {
         await fetch(apiEndpoint, {
@@ -81,35 +115,63 @@ export function pingMe({
         log(`[ping-me] Failed to report metrics:`, error);
       }
     }
-  }, interval);
+  }
 
-  log(`[ping-me] Started pinging ${url} every ${interval / 1000}s`);
+  pingOnce();
   
-  // Return a cleanup function
   return () => {
     clearInterval(intervalId);
     log(`[ping-me] Stopped pinging ${url}`);
   };
 }
 
-/**
- * Creates a ping endpoint handler for various frameworks
- * @param options Configuration options
- * @returns An object with handler functions for different frameworks
- */
-export function createPingEndpoint(options: { message?: string } = {}) {
-  const { message = 'Ping-Me: Service is up and running' } = options;
+function isRetryableError(error: any): boolean {
+  if (error instanceof TypeError || error.name === 'AbortError') {
+    return true;
+  }
+  
+  return false;
+}
+
+export function createPingEndpoint(options: { 
+  message?: string;
+  includeTimestamp?: boolean;
+  includeVersion?: boolean;
+  includeMemoryUsage?: boolean;
+} = {}) {
+  const { 
+    message = 'Ping-Me: Service is up and running',
+    includeTimestamp = true,
+    includeVersion = false,
+    includeMemoryUsage = false
+  } = options;
+  
+  const response: Record<string, any> = {
+    status: 'ok', 
+    message,
+  };
+  
+  if (includeTimestamp) {
+    response['timestamp'] = new Date().toISOString();
+  }
+  
+  if (includeVersion && typeof process !== 'undefined') {
+    response['version'] = process.version;
+  }
+  
+  if (includeMemoryUsage && typeof process !== 'undefined') {
+    try {
+      response['memory'] = process.memoryUsage();
+    } catch (e) {
+      // Ignore if not available (e.g., in browser)
+    }
+  }
   
   return {
     message,
     
-    // Generic handler for any framework
     handler: () => {
-      return { 
-        status: 'ok', 
-        message,
-        timestamp: new Date().toISOString(),
-      };
+      return response;
     },
   };
 }

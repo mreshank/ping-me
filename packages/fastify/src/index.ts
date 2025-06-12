@@ -1,22 +1,74 @@
-import { pingMe } from '@ping-me/core';
-import { FastifyInstance } from 'fastify';
+import { pingMe, createPingEndpoint } from '@ping-me/core';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 
-export function withPingMeFastify(
-  app: FastifyInstance,
-  options: {
-    route?: string;
-    interval?: number;
-    log?: boolean;
-  }
-) {
-  const route = options.route || '/ping-me';
-  const interval = options.interval || 300000;
-
-  app.get(route, async (_, reply) => reply.send('pong'));
-
-  pingMe({
-    url: `http://localhost:3000${route}`,
-    interval,
-    log: options.log ? console.log : () => {}
-  });
+export interface PingMeFastifyOptions {
+  route?: string;
+  interval?: number;
+  log?: boolean;
+  message?: string;
+  autoStart?: boolean;
+  apiKey?: string;
+  apiEndpoint?: string;
+  baseUrl?: string;
 }
+
+/**
+ * Fastify plugin for ping-me
+ * Adds a ping endpoint and optionally starts pinging it
+ */
+export function withPingMe(
+  app: FastifyInstance,
+  options: PingMeFastifyOptions = {}
+) {
+  const {
+    route = '/ping-me',
+    interval = 300000, // 5 minutes
+    log = true,
+    message = 'Ping-Me: Fastify server is up and running',
+    autoStart = true,
+    apiKey,
+    apiEndpoint,
+    baseUrl,
+  } = options;
+
+  // Create the ping endpoint
+  app.get(route, async (_req: FastifyRequest, reply: FastifyReply) => {
+    const response = createPingEndpoint({ message }).handler();
+    return reply.send(response);
+  });
+
+  if (autoStart) {
+    // Determine the full URL to ping
+    let pingUrl: string;
+    
+    if (baseUrl) {
+      // Use provided baseUrl
+      pingUrl = `${baseUrl.replace(/\/$/, '')}${route}`;
+    } else {
+      // Default to localhost:3000 if no baseUrl provided
+      pingUrl = `http://localhost:3000${route}`;
+    }
+    
+    // Start pinging
+    const stopPinging = pingMe({
+      url: pingUrl,
+      interval,
+      log: log ? console.log : () => {},
+      apiKey,
+      apiEndpoint,
+    });
+    
+    return {
+      stopPinging,
+      pingUrl,
+    };
+  }
+  
+  return {
+    stopPinging: () => {},
+    pingUrl: baseUrl ? `${baseUrl.replace(/\/$/, '')}${route}` : `http://localhost:3000${route}`,
+  };
+}
+
+// Alias for backward compatibility
+export const withPingMeFastify = withPingMe;

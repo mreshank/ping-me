@@ -55,6 +55,19 @@ Ping-Me makes sure your backend never sleeps, and if it tries, you know about it
 
 ## 📦 Installation
 
+### Simple Installation (Auto-Detects Your Framework)
+
+```bash
+# Install the main package
+npm install ping-me
+```
+
+That's it! The `ping-me` package automatically detects which framework you're using and provides the appropriate adapters.
+
+### Framework-Specific Installation
+
+If you prefer to explicitly use a specific adapter:
+
 ```bash
 # Install the core library
 npm install @ping-me/core
@@ -67,7 +80,7 @@ npm install @ping-me/express
 # npm install @ping-me/hono
 ```
 
-Or use the CLI to set up:
+### CLI Setup
 
 ```bash
 npx ping-me init
@@ -75,6 +88,22 @@ npx ping-me add express
 ```
 
 ## 🧰 Usage
+
+### Auto-Detected Framework
+
+```javascript
+// Simply import ping-me and it auto-detects your framework
+const pingMe = require('ping-me');
+
+// For Express apps
+const app = require('express')();
+pingMe.withPingMe(app);
+
+// Or use the core functionality directly
+pingMe.pingMe({
+  url: 'https://my-api.com/ping'
+});
+```
 
 ### Express
 
@@ -175,6 +204,7 @@ ping-me/
 │   ├── examples/      ← Example usage of ping-me
 │   └── api/           ← Serverless API routes
 ├── packages/
+│   ├── ping-me/       ← Main package with auto-detection
 │   ├── core/          ← Framework-agnostic ping logic
 │   ├── cli/           ← CLI: npx ping-me init
 │   ├── express/       ← Express adapter
@@ -212,3 +242,52 @@ If you find Ping-Me useful, please consider sponsoring the project:
 ---
 
 Made with ❤️ by [@mreshank](https://github.com/mreshank)
+
+## ❓ FAQ
+
+### Can we install and use this from npm?
+
+Yes! All packages are designed to be published to npm. Once published, you can install them using npm, yarn, or pnpm:
+
+```bash
+# Install the main package (auto-detects your framework)
+npm install ping-me
+
+# Or install specific packages
+npm install @ping-me/core
+npm install @ping-me/express
+```
+
+### Can we use it simply with npm i ping-me?
+
+Yes! We've created a main `ping-me` package that automatically detects which framework you're using and provides the appropriate adapters. Simply install with:
+
+```bash
+npm install ping-me
+```
+
+And then import it in your code:
+
+```javascript
+// It auto-detects your framework
+const pingMe = require('ping-me');
+
+// Use with Express
+const app = require('express')();
+pingMe.withPingMe(app);
+
+// Or use directly
+pingMe.pingMe({ url: 'https://my-api.com' });
+```
+
+### Which frameworks are supported?
+
+Currently, we support:
+- Express
+- Next.js
+- Fastify
+- Koa (coming soon)
+- Hono (coming soon)
+- Metrics Server (coming soon)
+
+But the core package works with any HTTP server!
