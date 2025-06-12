@@ -1,0 +1,230 @@
+{
+  "name": "@ping-me/fastify",
+  "description": "Fastify plugin for Ping-Me to keep your Fastify applications alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/fastify"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "fastify",
+    "plugin",
+    "health-check"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "fastify": ">=3.0.0"
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "withPingMe",
+        "description": "Adds Ping-Me functionality to a Fastify application.",
+        "parameters": [
+          {
+            "name": "app",
+            "type": "FastifyInstance",
+            "description": "A Fastify instance",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "PingMeFastifyOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": true
+          }
+        ],
+        "returns": "FastifyInstance",
+        "returnDescription": "The Fastify instance for chaining"
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "PingMeFastifyOptions",
+        "description": "Configuration options for the withPingMe function",
+        "properties": [
+          {
+            "name": "apiKey",
+            "type": "string",
+            "description": "Your Ping-Me API key",
+            "required": true
+          },
+          {
+            "name": "route",
+            "type": "string",
+            "description": "The route to use for the ping endpoint (default: '/ping')",
+            "required": false
+          },
+          {
+            "name": "interval",
+            "type": "number",
+            "description": "Ping interval in milliseconds (default: 5 minutes)",
+            "required": false
+          },
+          {
+            "name": "log",
+            "type": "boolean",
+            "description": "Whether to log ping events to the console (default: false)",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Custom message to return on the ping endpoint (default: 'OK')",
+            "required": false
+          },
+          {
+            "name": "autoStart",
+            "type": "boolean",
+            "description": "Whether to automatically start pinging (default: true)",
+            "required": false
+          },
+          {
+            "name": "apiEndpoint",
+            "type": "string",
+            "description": "Custom API endpoint URL (advanced usage)",
+            "required": false
+          },
+          {
+            "name": "baseUrl",
+            "type": "string",
+            "description": "Base URL of your application (will be auto-detected if not provided)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Simple example of using the Fastify plugin",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\n// Add Ping-Me to your app with default settings\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here'\n});\n\nfastify.get('/', async (request, reply) => {\n  return { hello: 'world' };\n});\n\nfastify.listen({ port: 3000 }, (err) => {\n  if (err) throw err;\n  console.log('Server is running on port 3000');\n});"
+    },
+    "typescript": {
+      "title": "TypeScript Usage",
+      "description": "Using the Fastify plugin with TypeScript",
+      "code": "import Fastify from 'fastify';\nimport { withPingMe } from '@ping-me/fastify';\n\nconst fastify = Fastify();\n\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here'\n});\n\nfastify.get('/', async (request, reply) => {\n  return { hello: 'world' };\n});\n\nconst start = async () => {\n  try {\n    await fastify.listen({ port: 3000 });\n    console.log('Server is running on port 3000');\n  } catch (err) {\n    fastify.log.error(err);\n    process.exit(1);\n  }\n};\n\nstart();"
+    },
+    "advancedExamples": [
+      {
+        "title": "Custom Ping Response Schema",
+        "description": "Using schema validation for the ping endpoint",
+        "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\n// Define a schema for the ping response\nconst pingResponseSchema = {\n  schema: {\n    response: {\n      200: {\n        type: 'object',\n        properties: {\n          status: { type: 'string' },\n          version: { type: 'string' },\n          timestamp: { type: 'string', format: 'date-time' },\n          uptime: { type: 'number' }\n        }\n      }\n    }\n  }\n};\n\n// Create a custom handler\nfastify.get('/health', pingResponseSchema, async () => {\n  return {\n    status: 'healthy',\n    version: process.env.npm_package_version || '1.0.0',\n    timestamp: new Date().toISOString(),\n    uptime: process.uptime()\n  };\n});\n\n// Add Ping-Me with the custom route\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here',\n  route: '/health'\n});\n\nfastify.listen({ port: 3000 });"
+      },
+      {
+        "title": "Health Check with Additional Information",
+        "description": "Extended ping endpoint with health information",
+        "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\n// Add a custom health check route\nfastify.get('/health', async (request, reply) => {\n  try {\n    // Check database connection (example)\n    let dbStatus = 'unknown';\n    try {\n      // This is just an example, replace with your actual DB check\n      const db = fastify.mongo.db;\n      await db.command({ ping: 1 });\n      dbStatus = 'connected';\n    } catch (dbError) {\n      fastify.log.error(dbError);\n      dbStatus = 'disconnected';\n    }\n    \n    // Get memory usage\n    const memoryUsage = process.memoryUsage();\n    \n    // Return health information\n    return {\n      status: 'healthy',\n      uptime: process.uptime(),\n      database: dbStatus,\n      memory: {\n        rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',\n        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',\n        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB'\n      },\n      timestamp: new Date().toISOString()\n    };\n  } catch (error) {\n    // Log the error\n    request.log.error(error);\n    \n    // Return an error response\n    reply.status(500);\n    return {\n      status: 'unhealthy',\n      error: error.message\n    };\n  }\n});\n\n// Set up Ping-Me with the custom health route\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here',\n  route: '/health'\n});\n\nfastify.listen({ port: 3000 });"
+      },
+      {
+        "title": "Using with Environment Variables",
+        "description": "Loading configuration from environment variables",
+        "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\nrequire('dotenv').config();\n\n// Get configuration from environment variables\nconst pingMeOptions = {\n  apiKey: process.env.PING_ME_API_KEY,\n  route: process.env.PING_ME_ROUTE || '/ping',\n  interval: parseInt(process.env.PING_ME_INTERVAL || '300000', 10),\n  log: process.env.PING_ME_LOG === 'true',\n  autoStart: process.env.PING_ME_AUTO_START !== 'false'\n};\n\n// Only add Ping-Me if API key is provided\nif (pingMeOptions.apiKey) {\n  withPingMe(fastify, pingMeOptions);\n  fastify.log.info(`Ping-Me initialized with route: ${pingMeOptions.route}`);\n} else {\n  fastify.log.warn('Ping-Me API key not provided. Ping-Me is disabled.');\n}\n\nfastify.listen({ port: 3000 });"
+      },
+      {
+        "title": "With Prefix",
+        "description": "Using Fastify's prefix option with Ping-Me",
+        "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\n// Create a plugin with a prefix\nconst apiPlugin = async (fastify, options) => {\n  fastify.get('/', async () => {\n    return { api: 'v1' };\n  });\n  \n  fastify.get('/users', async () => {\n    return { users: [] };\n  });\n  \n  // You can add a ping endpoint here that will be prefixed\n  fastify.get('/health', async () => {\n    return { status: 'healthy' };\n  });\n};\n\n// Register the plugin with a prefix\nfastify.register(apiPlugin, { prefix: '/api/v1' });\n\n// Add Ping-Me with the prefixed route\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here',\n  route: '/api/v1/health' // Match the prefixed route\n});\n\nfastify.listen({ port: 3000 });"
+      },
+      {
+        "title": "Multiple Services",
+        "description": "Managing multiple services in a microservices architecture",
+        "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\n// Add service identification to the ping response\nfastify.get('/health', async () => {\n  return {\n    service: 'user-service',\n    version: '1.0.0',\n    status: 'healthy',\n    timestamp: new Date().toISOString()\n  };\n});\n\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here',\n  route: '/health',\n  // Use a service-specific base URL for proper identification in the dashboard\n  baseUrl: process.env.SERVICE_URL || 'https://user-service.example.com'\n});\n\nfastify.listen({ port: 3000 });"
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "title": "With Helmet Security",
+      "description": "Using Ping-Me with fastify-helmet",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\nconst helmet = require('@fastify/helmet');\n\n// Register helmet\nawait fastify.register(helmet, {\n  // Configure helmet\n});\n\n// Add Ping-Me\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here'\n});\n\nfastify.listen({ port: 3000 });"
+    },
+    {
+      "title": "With Rate Limiting",
+      "description": "Using Ping-Me with rate limiting",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\nconst rateLimit = require('@fastify/rate-limit');\n\n// Define the ping route path for exclusion\nconst PING_ROUTE = '/ping';\n\n// Register rate limit plugin with ping route excluded\nawait fastify.register(rateLimit, {\n  max: 100,\n  timeWindow: '1 minute',\n  skipOnError: true,\n  // Skip rate limiting for the ping route\n  skip: (request) => request.url === PING_ROUTE\n});\n\n// Add Ping-Me\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here',\n  route: PING_ROUTE\n});\n\nfastify.listen({ port: 3000 });"
+    },
+    {
+      "title": "With Authentication",
+      "description": "Using Ping-Me with authentication",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\nconst fastifyAuth = require('@fastify/auth');\n\n// Register the auth plugin\nawait fastify.register(fastifyAuth);\n\n// Define authentication function\nfastify.decorate('authenticate', async (request, reply) => {\n  if (!request.headers.authorization) {\n    throw new Error('Missing token header');\n  }\n  // Authenticate the request\n  // ...\n});\n\n// Apply authentication to all routes except /ping\nfastify.addHook('onRequest', (request, reply, done) => {\n  if (request.url === '/ping') {\n    done();\n    return;\n  }\n  \n  fastify.authenticate(request, reply, done);\n});\n\n// Add Ping-Me\nwithPingMe(fastify, {\n  apiKey: 'your-api-key-here'\n});\n\nfastify.listen({ port: 3000 });"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Ping Endpoint Not Responding",
+        "solutions": [
+          "Check that the route is accessible from outside your network",
+          "Verify that no hooks or plugins are blocking the route",
+          "Check your server logs for errors",
+          "Try accessing the ping endpoint manually in a browser or with curl"
+        ]
+      },
+      {
+        "issue": "Service Not Being Monitored",
+        "solutions": [
+          "Verify that your API key is correct",
+          "Check that the ping endpoint is accessible from the internet",
+          "Verify that the ping interval is appropriate (not too long)",
+          "Check the Ping-Me dashboard for any alerts or errors"
+        ]
+      },
+      {
+        "issue": "Route Conflicts",
+        "solutions": [
+          "Check if another plugin has registered the same route",
+          "Change the ping route to something unique using the route option",
+          "Ensure that you don't have any route conflicts with your prefixed routes"
+        ]
+      },
+      {
+        "issue": "Server Startup Issues",
+        "solutions": [
+          "Ensure that Ping-Me is initialized before the server starts listening",
+          "Check for any errors in the Fastify startup logs",
+          "Verify that all plugin registrations are properly awaited if using async/await"
+        ]
+      }
+    ],
+    "manual": {
+      "title": "Manually Testing the Ping Endpoint",
+      "description": "You can test the ping endpoint manually using curl",
+      "code": "curl http://localhost:3000/ping"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "The ping endpoint is designed to be publicly accessible. Don't put sensitive information in the response.",
+      "Consider applying rate limiting to the ping endpoint to prevent abuse, but make sure it doesn't block legitimate ping requests.",
+      "Always use HTTPS in production to ensure secure communication."
+    ],
+    "performance": [
+      "Keep your ping endpoint lightweight. Avoid heavy database queries or external API calls.",
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary traffic.",
+      "Use the Ping-Me dashboard to monitor the performance of your ping endpoint."
+    ],
+    "reliability": [
+      "Implement robust error handling in your application to ensure it remains stable even if there are issues with the ping service.",
+      "Enable logging to help diagnose any issues with the ping service.",
+      "Ensure your application handles shutdown gracefully to avoid issues with the ping service."
+    ]
+  }
+} 

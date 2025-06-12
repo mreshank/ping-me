@@ -1,0 +1,231 @@
+{
+  "name": "@ping-me/express",
+  "description": "Express middleware for Ping-Me to keep your Express.js applications alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/express"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "express",
+    "middleware",
+    "health-check"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0"
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "withPingMe",
+        "description": "Adds Ping-Me functionality to an Express application.",
+        "parameters": [
+          {
+            "name": "app",
+            "type": "Express.Application",
+            "description": "An Express application instance",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "PingMeExpressOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": true
+          }
+        ],
+        "returns": "Express.Application",
+        "returnDescription": "The Express application instance for chaining"
+      },
+      {
+        "name": "createPingMiddleware",
+        "description": "Creates an Express middleware that responds to ping requests.",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeExpressOptions",
+            "description": "Configuration options for the middleware",
+            "required": true
+          }
+        ],
+        "returns": "Express.RequestHandler",
+        "returnDescription": "An Express middleware function that handles ping requests"
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "PingMeExpressOptions",
+        "description": "Configuration options for the withPingMe function",
+        "properties": [
+          {
+            "name": "apiKey",
+            "type": "string",
+            "description": "Your Ping-Me API key",
+            "required": true
+          },
+          {
+            "name": "route",
+            "type": "string",
+            "description": "The route to use for the ping endpoint (default: '/ping')",
+            "required": false
+          },
+          {
+            "name": "interval",
+            "type": "number",
+            "description": "Ping interval in milliseconds (default: 5 minutes)",
+            "required": false
+          },
+          {
+            "name": "log",
+            "type": "boolean",
+            "description": "Whether to log ping events to the console (default: false)",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Custom message to return on the ping endpoint (default: 'OK')",
+            "required": false
+          },
+          {
+            "name": "autoStart",
+            "type": "boolean",
+            "description": "Whether to automatically start pinging (default: true)",
+            "required": false
+          },
+          {
+            "name": "apiEndpoint",
+            "type": "string",
+            "description": "Custom API endpoint URL (advanced usage)",
+            "required": false
+          },
+          {
+            "name": "baseUrl",
+            "type": "string",
+            "description": "Base URL of your application (will be auto-detected if not provided)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Simple example of using the Express middleware",
+      "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\n\nconst app = express();\n\n// Add Ping-Me to your app with default settings\nwithPingMe(app, {\n  apiKey: 'your-api-key-here'\n});\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(3000, () => {\n  console.log('Server is running on port 3000');\n});"
+    },
+    "typescript": {
+      "title": "TypeScript Usage",
+      "description": "Using the Express middleware with TypeScript",
+      "code": "import express from 'express';\nimport { withPingMe } from '@ping-me/express';\n\nconst app = express();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key-here'\n});\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(3000, () => {\n  console.log('Server is running on port 3000');\n});"
+    },
+    "advancedExamples": [
+      {
+        "title": "Custom Ping Response",
+        "description": "Providing a custom response for the ping endpoint",
+        "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\n\nconst app = express();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  message: JSON.stringify({\n    status: 'healthy',\n    version: '1.0.0',\n    timestamp: new Date().toISOString()\n  })\n});\n\napp.listen(3000);"
+      },
+      {
+        "title": "Health Check with Additional Information",
+        "description": "Customizing the ping endpoint to include additional health information",
+        "code": "const express = require('express');\nconst { createPingMiddleware } = require('@ping-me/express');\nconst db = require('./db'); // Your database connection\n\nconst app = express();\n\n// Create a custom health check route\napp.get('/health', async (req, res) => {\n  try {\n    // Check database connection\n    const dbStatus = await db.ping();\n    \n    // Get memory usage\n    const memoryUsage = process.memoryUsage();\n    \n    // Return health information\n    res.json({\n      status: 'healthy',\n      uptime: process.uptime(),\n      database: dbStatus ? 'connected' : 'disconnected',\n      memory: {\n        rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',\n        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',\n        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB'\n      },\n      timestamp: new Date().toISOString()\n    });\n  } catch (error) {\n    res.status(500).json({\n      status: 'unhealthy',\n      error: error.message\n    });\n  }\n});\n\n// Set up Ping-Me with the custom health route\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  route: '/health' // Use the same route we defined above\n});\n\napp.listen(3000);"
+      },
+      {
+        "title": "Using with Environment Variables",
+        "description": "Loading configuration from environment variables",
+        "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\nrequire('dotenv').config();\n\nconst app = express();\n\n// Get configuration from environment variables\nconst pingMeOptions = {\n  apiKey: process.env.PING_ME_API_KEY,\n  route: process.env.PING_ME_ROUTE || '/ping',\n  interval: parseInt(process.env.PING_ME_INTERVAL || '300000', 10),\n  log: process.env.PING_ME_LOG === 'true',\n  autoStart: process.env.PING_ME_AUTO_START !== 'false'\n};\n\n// Only add Ping-Me if API key is provided\nif (pingMeOptions.apiKey) {\n  withPingMe(app, pingMeOptions);\n  console.log(`Ping-Me initialized with route: ${pingMeOptions.route}`);\n} else {\n  console.warn('Ping-Me API key not provided. Ping-Me is disabled.');\n}\n\napp.listen(3000);"
+      },
+      {
+        "title": "Multiple Applications on Different Ports",
+        "description": "Running multiple Express applications on different ports",
+        "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\n\n// API server\nconst apiApp = express();\nwithPingMe(apiApp, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://api.example.com',\n  route: '/health'\n});\napiApp.listen(3000);\n\n// Admin server\nconst adminApp = express();\nwithPingMe(adminApp, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://admin.example.com',\n  route: '/health'\n});\nadminApp.listen(3001);"
+      },
+      {
+        "title": "With Express Router",
+        "description": "Using Ping-Me with Express Router",
+        "code": "const express = require('express');\nconst { createPingMiddleware } = require('@ping-me/express');\n\nconst app = express();\nconst router = express.Router();\n\n// Add the ping middleware to a router\nrouter.get('/health', createPingMiddleware({\n  message: 'API router is healthy'\n}));\n\n// Add other routes to the router\nrouter.get('/users', (req, res) => {\n  res.json({ users: [] });\n});\n\n// Use the router with a path prefix\napp.use('/api', router);\n\n// Initialize Ping-Me for the main app\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  route: '/api/health' // Match the router path + health endpoint\n});\n\napp.listen(3000);"
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "title": "Rate Limiting",
+      "description": "Excluding the ping endpoint from rate limiting",
+      "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\nconst rateLimit = require('express-rate-limit');\n\nconst app = express();\n\nconst limiter = rateLimit({\n  windowMs: 15 * 60 * 1000, // 15 minutes\n  max: 100, // limit each IP to 100 requests per windowMs\n  skip: (req) => req.path === '/ping' // Skip rate limiting for ping endpoint\n});\n\n// Apply rate limiting to all requests\napp.use(limiter);\n\n// Add Ping-Me\nwithPingMe(app, {\n  apiKey: 'your-api-key-here'\n});\n\napp.listen(3000);"
+    },
+    {
+      "title": "Authentication",
+      "description": "Excluding the ping endpoint from authentication",
+      "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\nconst jwt = require('express-jwt');\n\nconst app = express();\n\n// JWT authentication middleware\nconst authenticate = jwt({\n  secret: 'your-secret',\n  algorithms: ['HS256']\n}).unless({\n  path: ['/ping'] // Exclude ping endpoint from authentication\n});\n\n// Apply authentication to all routes\napp.use(authenticate);\n\n// Add Ping-Me\nwithPingMe(app, {\n  apiKey: 'your-api-key-here'\n});\n\napp.listen(3000);"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Ping Endpoint Not Responding",
+        "solutions": [
+          "Check that the route is accessible from outside your network",
+          "Verify that no middleware is blocking the route",
+          "Check your server logs for errors",
+          "Try accessing the ping endpoint manually in a browser or with curl"
+        ]
+      },
+      {
+        "issue": "Service Not Being Monitored",
+        "solutions": [
+          "Verify that your API key is correct",
+          "Check that the ping endpoint is accessible from the internet",
+          "Verify that the ping interval is appropriate (not too long)",
+          "Check the Ping-Me dashboard for any alerts or errors"
+        ]
+      },
+      {
+        "issue": "High CPU or Memory Usage",
+        "solutions": [
+          "Increase the ping interval to reduce frequency",
+          "Check for other issues in your application that might be causing high resource usage",
+          "Ensure you're not making unnecessary database queries or API calls in your ping endpoint"
+        ]
+      }
+    ],
+    "manual": {
+      "title": "Manually Testing the Ping Endpoint",
+      "description": "You can test the ping endpoint manually using curl",
+      "code": "curl http://localhost:3000/ping"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "The ping endpoint is designed to be publicly accessible. Don't put sensitive information in the response.",
+      "Consider applying rate limiting to the ping endpoint to prevent abuse, but make sure it doesn't block legitimate ping requests.",
+      "Always use HTTPS in production to ensure secure communication."
+    ],
+    "performance": [
+      "Keep your ping endpoint lightweight. Avoid heavy database queries or external API calls.",
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary traffic.",
+      "Use the Ping-Me dashboard to monitor the performance of your ping endpoint."
+    ],
+    "reliability": [
+      "Implement robust error handling in your application to ensure it remains stable even if there are issues with the ping service.",
+      "Enable logging to help diagnose any issues with the ping service.",
+      "Ensure your application handles shutdown gracefully to avoid issues with the ping service."
+    ]
+  }
+} 

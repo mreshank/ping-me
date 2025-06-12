@@ -1,0 +1,323 @@
+{
+  "name": "ping-me",
+  "description": "Keep your free tier backends alive with auto-pinging and monitoring",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/ping-me"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "keepwake",
+    "keep-server-alive",
+    "keepawake"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ping-me": "./dist/index.js",
+    "keep-server-alive": "./dist/cli.js",
+    "keepwake": "./dist/cli.js",
+    "keepawake": "./dist/cli.js"
+  },
+  "dependencies": {
+    "@ping-me/core": "workspace:*",
+    "node-fetch": "^3.3.2",
+    "commander": "^11.1.0"
+  },
+  "optionalDependencies": {
+    "@ping-me/express": "workspace:*",
+    "@ping-me/next": "workspace:*",
+    "@ping-me/fastify": "workspace:*",
+    "@ping-me/koa": "workspace:*",
+    "@ping-me/hono": "workspace:*"
+  },
+  "frameworks": {
+    "express": {
+      "name": "Express",
+      "description": "Fast, unopinionated, minimalist web framework for Node.js",
+      "adapter": "@ping-me/express",
+      "mainFunction": "withPingMe"
+    },
+    "next": {
+      "name": "Next.js",
+      "description": "The React Framework for Production",
+      "adapter": "@ping-me/next",
+      "mainFunction": "createPingMeHandler",
+      "additionalFunctions": ["withPingMeNext", "usePingMe"]
+    },
+    "fastify": {
+      "name": "Fastify",
+      "description": "Fast and low overhead web framework for Node.js",
+      "adapter": "@ping-me/fastify",
+      "mainFunction": "withPingMe"
+    },
+    "koa": {
+      "name": "Koa",
+      "description": "Next generation web framework for Node.js",
+      "adapter": "@ping-me/koa",
+      "mainFunction": "withPingMe"
+    },
+    "hono": {
+      "name": "Hono",
+      "description": "Ultrafast web framework for the Edges",
+      "adapter": "@ping-me/hono",
+      "mainFunction": "withPingMe"
+    }
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "initialize",
+        "description": "Initialize ping-me with auto-detection of frameworks",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": false
+          }
+        ],
+        "returns": "Object containing framework-specific adapters and functions",
+        "returnDescription": "An object with framework detection and appropriate adapter functions"
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "PingMeOptions",
+        "description": "Configuration options for ping-me",
+        "properties": [
+          {
+            "name": "apiKey",
+            "type": "string",
+            "description": "Your Ping-Me API key for monitoring",
+            "required": false
+          },
+          {
+            "name": "route",
+            "type": "string",
+            "description": "The route to use for the ping endpoint (default varies by framework)",
+            "required": false
+          },
+          {
+            "name": "interval",
+            "type": "number",
+            "description": "Ping interval in milliseconds (default: 5 minutes)",
+            "required": false
+          },
+          {
+            "name": "log",
+            "type": "boolean",
+            "description": "Whether to log ping events to the console (default: true)",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Custom message to return on the ping endpoint",
+            "required": false
+          },
+          {
+            "name": "autoStart",
+            "type": "boolean",
+            "description": "Whether to automatically start pinging (default: true)",
+            "required": false
+          },
+          {
+            "name": "apiEndpoint",
+            "type": "string",
+            "description": "Custom API endpoint URL for the monitoring system",
+            "required": false
+          },
+          {
+            "name": "baseUrl",
+            "type": "string",
+            "description": "Base URL of your application (required for some frameworks)",
+            "required": false
+          },
+          {
+            "name": "url",
+            "type": "string | string[]",
+            "description": "URL(s) to ping (CLI only, can be a string or array of strings)",
+            "required": false
+          },
+          {
+            "name": "env",
+            "type": "string",
+            "description": "Environment variable prefix for loading endpoints (CLI only)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "cli": {
+    "name": "ping-me",
+    "description": "Command-line tool to keep your services alive",
+    "aliases": ["keep-server-alive", "keepwake", "keepawake"],
+    "options": [
+      {
+        "name": "apiKey",
+        "alias": "k",
+        "description": "Your Ping-Me API key",
+        "required": false
+      },
+      {
+        "name": "interval",
+        "alias": "i",
+        "description": "Ping interval in milliseconds",
+        "required": false,
+        "default": 300000
+      },
+      {
+        "name": "url",
+        "alias": "u",
+        "description": "URL to ping (can be used multiple times)",
+        "required": false
+      },
+      {
+        "name": "env",
+        "alias": "e",
+        "description": "Load endpoints from environment variables with this prefix",
+        "required": false,
+        "default": "PING_ME_ENDPOINT_"
+      },
+      {
+        "name": "help",
+        "alias": "h",
+        "description": "Show help message",
+        "required": false
+      }
+    ],
+    "examples": [
+      {
+        "command": "ping-me --apiKey abc123 --url https://myapp.com/api",
+        "description": "Ping a single endpoint with API key"
+      },
+      {
+        "command": "ping-me --interval 60000 --env MY_APP_",
+        "description": "Ping endpoints from environment variables with custom interval"
+      },
+      {
+        "command": "keep-server-alive --url https://api1.example.com --url https://api2.example.com",
+        "description": "Ping multiple endpoints using an alias command"
+      }
+    ]
+  },
+  "usage": {
+    "basic": {
+      "title": "Basic Usage with Auto-Detection",
+      "description": "The package automatically detects which framework you're using",
+      "code": "const { withPingMe } = require('ping-me');\n\n// For Express\nconst app = require('express')();\nwithPingMe(app);\n\n// For Next.js\n// In pages/api/ping.js\nexport default withPingMe();\n\n// For Fastify\nconst fastify = require('fastify')();\nwithPingMe(fastify);\n\n// For Koa\nconst Koa = require('koa');\nconst Router = require('koa-router');\nconst app = new Koa();\nconst router = new Router();\nwithPingMe(app, router);\n\n// For Hono\nconst { Hono } = require('hono');\nconst app = new Hono();\nwithPingMe(app);"
+    },
+    "explicit": {
+      "title": "Explicit Framework Import",
+      "description": "If you prefer to explicitly import the adapter for your framework",
+      "code": "// Express\nconst { withPingMe } = require('@ping-me/express');\nconst app = require('express')();\nwithPingMe(app);\n\n// Next.js\nconst { createPingMeHandler } = require('@ping-me/next');\nexport default createPingMeHandler();\n\n// Fastify\nconst { withPingMe } = require('@ping-me/fastify');\nconst fastify = require('fastify')();\nwithPingMe(fastify);\n\n// Koa\nconst { withPingMe } = require('@ping-me/koa');\nconst Koa = require('koa');\nconst Router = require('koa-router');\nconst app = new Koa();\nconst router = new Router();\nwithPingMe(app, router);\n\n// Hono\nconst { withPingMe } = require('@ping-me/hono');\nconst { Hono } = require('hono');\nconst app = new Hono();\nwithPingMe(app);"
+    },
+    "cli": {
+      "title": "Command-Line Interface",
+      "description": "Using the CLI to ping your endpoints",
+      "code": "# Basic usage\nnpx ping-me --url https://your-app.example.com\n\n# Multiple endpoints\nnpx ping-me --url https://api1.example.com --url https://api2.example.com\n\n# Custom interval (in milliseconds)\nnpx ping-me --url https://your-app.example.com --interval 60000\n\n# With API key for monitoring\nnpx ping-me --url https://your-app.example.com --apiKey your-api-key"
+    },
+    "advancedExamples": [
+      {
+        "title": "Framework-Specific Initialization",
+        "description": "For more control, you can use the initialize function",
+        "code": "const { initialize } = require('ping-me');\n\nconst pingMe = initialize({\n  apiKey: 'your-api-key',\n  interval: 60000\n});\n\nconsole.log(`Detected framework: ${pingMe.framework}`);\n\n// Use the appropriate adapter\nif (pingMe.framework === 'express') {\n  const app = require('express')();\n  pingMe.withPingMe(app);\n} else if (pingMe.framework === 'next') {\n  // Use Next.js specific functions\n  const handler = pingMe.createPingMeHandler();\n} else {\n  // Use core functionality\n  const { stopPinging } = pingMe.pingMe({\n    url: 'https://your-app.example.com'\n  });\n}"
+      },
+      {
+        "title": "Environment Variables for CLI",
+        "description": "Define endpoints in environment variables",
+        "code": "# Define endpoints\nexport PING_ME_ENDPOINT_1=https://api1.example.com\nexport PING_ME_ENDPOINT_2=https://api2.example.com\n\n# Load them with the default prefix\nnpx ping-me --env PING_ME_ENDPOINT_\n\n# Or with a custom prefix\nexport MY_APP_API=https://api.myapp.com\nexport MY_APP_WEB=https://myapp.com\nnpx ping-me --env MY_APP_"
+      },
+      {
+        "title": "Custom Ping Handler",
+        "description": "Create a custom ping handler for more complex scenarios",
+        "code": "const { pingMe, createPingEndpoint } = require('ping-me');\n\n// Create a custom ping endpoint\nconst pingHandler = createPingEndpoint({\n  message: JSON.stringify({\n    status: 'ok',\n    version: '1.0.0',\n    timestamp: new Date().toISOString()\n  })\n});\n\n// Use it in your application\napp.get('/health', (req, res) => {\n  const response = pingHandler.handler();\n  res.json(response);\n});\n\n// Start pinging it\nconst { stopPinging } = pingMe({\n  url: 'https://your-app.example.com/health',\n  interval: 60000,\n  apiKey: 'your-api-key'\n});\n\n// Stop pinging when needed\nprocess.on('SIGINT', () => {\n  stopPinging();\n  process.exit(0);\n});"
+      }
+    ]
+  },
+  "frameworkExamples": [
+    {
+      "framework": "Express",
+      "description": "Using ping-me with Express",
+      "code": "const express = require('express');\nconst { withPingMe } = require('ping-me');\n\nconst app = express();\n\nwithPingMe(app, {\n  route: '/health',\n  interval: 60000\n});\n\napp.listen(3000);"
+    },
+    {
+      "framework": "Next.js",
+      "description": "Using ping-me with Next.js",
+      "code": "// pages/api/ping.js\nimport { createPingMeHandler } from 'ping-me';\n\nexport default createPingMeHandler({\n  message: 'Next.js server is alive'\n});\n\n// In your _app.js (for client-side pinging)\nimport { usePingMe } from 'ping-me';\n\nfunction MyApp({ Component, pageProps }) {\n  // This will ping the server from the client\n  usePingMe({\n    interval: 60000\n  });\n  \n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;"
+    },
+    {
+      "framework": "Fastify",
+      "description": "Using ping-me with Fastify",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('ping-me');\n\nwithPingMe(fastify, {\n  route: '/health',\n  interval: 60000\n});\n\nfastify.listen({ port: 3000 });"
+    },
+    {
+      "framework": "Koa",
+      "description": "Using ping-me with Koa",
+      "code": "const Koa = require('koa');\nconst Router = require('koa-router');\nconst { withPingMe } = require('ping-me');\n\nconst app = new Koa();\nconst router = new Router();\n\nwithPingMe(app, router, {\n  route: '/health',\n  interval: 60000\n});\n\napp.listen(3000);"
+    },
+    {
+      "framework": "Hono",
+      "description": "Using ping-me with Hono",
+      "code": "const { Hono } = require('hono');\nconst { withPingMe } = require('ping-me');\n\nconst app = new Hono();\n\nwithPingMe(app, {\n  route: '/health',\n  interval: 60000,\n  baseUrl: 'https://your-app.example.com'\n});\n\nexport default app;"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Framework Not Detected",
+        "solutions": [
+          "Make sure the framework package is installed",
+          "Try using the explicit import for your framework",
+          "Use the core functionality directly"
+        ]
+      },
+      {
+        "issue": "Multiple Frameworks Detected",
+        "solutions": [
+          "The package will use the first framework it finds",
+          "To use a specific framework, import it directly"
+        ]
+      },
+      {
+        "issue": "CLI Not Working",
+        "solutions": [
+          "Make sure you're using the correct command: npx ping-me",
+          "Check that the URL is accessible",
+          "Try with the verbose flag: npx ping-me --url https://example.com --verbose"
+        ]
+      }
+    ]
+  },
+  "bestPractices": {
+    "security": [
+      "The ping endpoint is designed to be publicly accessible. Don't put sensitive information in the response.",
+      "Consider applying rate limiting to the ping endpoint to prevent abuse.",
+      "Always use HTTPS in production to ensure secure communication."
+    ],
+    "performance": [
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary traffic.",
+      "Keep your ping endpoint lightweight to minimize resource usage."
+    ],
+    "reliability": [
+      "Implement robust error handling to ensure your application remains stable.",
+      "Enable logging to help diagnose any issues with the ping service.",
+      "Stop the ping service gracefully when shutting down your application."
+    ]
+  }
+} 

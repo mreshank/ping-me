@@ -1,0 +1,517 @@
+{
+  "name": "@ping-me/cli",
+  "description": "Command-line interface for Ping-Me to keep your services alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "cli",
+    "command-line",
+    "terminal"
+  ],
+  "bin": {
+    "ping-me": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*",
+    "commander": "^11.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "conf": "^11.0.1",
+    "table": "^6.8.1",
+    "node-cron": "^3.0.2",
+    "inquirer": "^9.2.7"
+  },
+  "commands": [
+    {
+      "name": "start",
+      "description": "Start monitoring one or more endpoints",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "URL(s) to monitor (can be specified multiple times)",
+          "required": false
+        },
+        {
+          "name": "--interval, -i <ms>",
+          "description": "Ping interval in milliseconds (default: 300000)",
+          "required": false
+        },
+        {
+          "name": "--log, -l",
+          "description": "Enable detailed logging",
+          "required": false
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: text)",
+          "required": false
+        },
+        {
+          "name": "--config, -c <path>",
+          "description": "Path to a configuration file",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me start -k YOUR_API_KEY -u https://api.example.com",
+          "description": "Basic usage"
+        },
+        {
+          "command": "ping-me start -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com -i 60000",
+          "description": "Monitor multiple endpoints with 1-minute interval"
+        },
+        {
+          "command": "ping-me start -k YOUR_API_KEY -u https://api.example.com -l -f json",
+          "description": "Enable detailed logging with JSON output"
+        },
+        {
+          "command": "ping-me start -c ./ping-me-config.json",
+          "description": "Use a configuration file"
+        }
+      ]
+    },
+    {
+      "name": "stop",
+      "description": "Stop monitoring endpoints",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "Specific URL(s) to stop monitoring (if omitted, stops all)",
+          "required": false
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: text)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me stop -k YOUR_API_KEY",
+          "description": "Stop monitoring all endpoints"
+        },
+        {
+          "command": "ping-me stop -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com",
+          "description": "Stop monitoring specific endpoints"
+        }
+      ]
+    },
+    {
+      "name": "list",
+      "description": "List all registered endpoints",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: table)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me list -k YOUR_API_KEY",
+          "description": "List all endpoints in table format"
+        },
+        {
+          "command": "ping-me list -k YOUR_API_KEY -f json",
+          "description": "List all endpoints in JSON format"
+        }
+      ]
+    },
+    {
+      "name": "add",
+      "description": "Add one or more endpoints to monitor",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "URL(s) to add for monitoring (can be specified multiple times)",
+          "required": true
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: text)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me add -k YOUR_API_KEY -u https://new-api.example.com",
+          "description": "Add a single endpoint"
+        },
+        {
+          "command": "ping-me add -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com",
+          "description": "Add multiple endpoints"
+        }
+      ]
+    },
+    {
+      "name": "remove",
+      "description": "Remove one or more endpoints from monitoring",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "URL(s) to remove from monitoring (can be specified multiple times)",
+          "required": true
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: text)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me remove -k YOUR_API_KEY -u https://old-api.example.com",
+          "description": "Remove a single endpoint"
+        },
+        {
+          "command": "ping-me remove -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com",
+          "description": "Remove multiple endpoints"
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "description": "Check the status of monitored endpoints",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "Specific URL(s) to check (if omitted, checks all)",
+          "required": false
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: table)",
+          "required": false
+        },
+        {
+          "name": "--watch, -w",
+          "description": "Watch mode, continuously update status (default: false)",
+          "required": false
+        },
+        {
+          "name": "--interval, -i <ms>",
+          "description": "Refresh interval for watch mode in milliseconds (default: 5000)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me status -k YOUR_API_KEY",
+          "description": "Check status of all endpoints"
+        },
+        {
+          "command": "ping-me status -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com",
+          "description": "Check status of specific endpoints"
+        },
+        {
+          "command": "ping-me status -k YOUR_API_KEY -w -i 2000",
+          "description": "Watch status with 2-second refresh interval"
+        }
+      ]
+    },
+    {
+      "name": "ping",
+      "description": "Manually ping one or more endpoints",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--url, -u <url>",
+          "description": "URL(s) to ping (can be specified multiple times)",
+          "required": true
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: table)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me ping -k YOUR_API_KEY -u https://api.example.com",
+          "description": "Ping a single endpoint"
+        },
+        {
+          "command": "ping-me ping -k YOUR_API_KEY -u https://api1.example.com -u https://api2.example.com",
+          "description": "Ping multiple endpoints"
+        }
+      ]
+    },
+    {
+      "name": "config",
+      "description": "Manage configuration settings",
+      "options": [
+        {
+          "name": "--api-key, -k <key>",
+          "description": "Your Ping-Me API key",
+          "required": true
+        },
+        {
+          "name": "--set <key=value>",
+          "description": "Set a configuration option",
+          "required": false
+        },
+        {
+          "name": "--get <key>",
+          "description": "Get a configuration option",
+          "required": false
+        },
+        {
+          "name": "--reset",
+          "description": "Reset all configuration options to defaults",
+          "required": false
+        },
+        {
+          "name": "--format, -f <format>",
+          "description": "Output format (json, table, text) (default: table)",
+          "required": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me config -k YOUR_API_KEY --set interval=60000",
+          "description": "Set the default ping interval"
+        },
+        {
+          "command": "ping-me config -k YOUR_API_KEY --get interval",
+          "description": "Get the current ping interval"
+        },
+        {
+          "command": "ping-me config -k YOUR_API_KEY --reset",
+          "description": "Reset all configuration options"
+        }
+      ]
+    },
+    {
+      "name": "service",
+      "description": "Manage Ping-Me as a service",
+      "subcommands": [
+        {
+          "name": "start",
+          "description": "Start Ping-Me as a background service",
+          "options": [
+            {
+              "name": "--api-key, -k <key>",
+              "description": "Your Ping-Me API key",
+              "required": true
+            },
+            {
+              "name": "--url, -u <url>",
+              "description": "URL(s) to monitor (can be specified multiple times)",
+              "required": false
+            },
+            {
+              "name": "--interval, -i <ms>",
+              "description": "Ping interval in milliseconds (default: 300000)",
+              "required": false
+            }
+          ]
+        },
+        {
+          "name": "stop",
+          "description": "Stop the Ping-Me service",
+          "options": []
+        },
+        {
+          "name": "status",
+          "description": "Check the status of the Ping-Me service",
+          "options": []
+        }
+      ],
+      "examples": [
+        {
+          "command": "ping-me service start -k YOUR_API_KEY -u https://api.example.com",
+          "description": "Start as a background service"
+        },
+        {
+          "command": "ping-me service status",
+          "description": "Check service status"
+        },
+        {
+          "command": "ping-me service stop",
+          "description": "Stop the service"
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Simple example of using the CLI",
+      "code": "ping-me start --api-key YOUR_API_KEY --url https://your-api.example.com"
+    },
+    "advanced": [
+      {
+        "title": "Monitoring Multiple Endpoints",
+        "description": "Start monitoring multiple endpoints with custom interval",
+        "code": "ping-me start --api-key YOUR_API_KEY --url https://api1.example.com --url https://api2.example.com --interval 60000"
+      },
+      {
+        "title": "Watching Status in Real-Time",
+        "description": "Monitor the status of your endpoints in real-time",
+        "code": "ping-me status --api-key YOUR_API_KEY --watch"
+      },
+      {
+        "title": "Using as a Service",
+        "description": "Run Ping-Me as a background service",
+        "code": "ping-me service start --api-key YOUR_API_KEY --url https://api.example.com"
+      },
+      {
+        "title": "Batch Processing",
+        "description": "Process multiple endpoints from a file",
+        "code": "echo \"https://api1.example.com\nhttps://api2.example.com\nhttps://api3.example.com\" > endpoints.txt\nping-me start --api-key YOUR_API_KEY --file endpoints.txt"
+      },
+      {
+        "title": "Using with Custom Headers",
+        "description": "Add custom headers to your ping requests",
+        "code": "ping-me start --api-key YOUR_API_KEY --url https://api.example.com --header \"Authorization: Bearer token\" --header \"X-Custom-Header: value\""
+      }
+    ]
+  },
+  "configuration": {
+    "file": {
+      "title": "Configuration File",
+      "description": "You can use a JSON configuration file to store your settings",
+      "example": "{\n  \"apiKey\": \"your-api-key-here\",\n  \"endpoints\": [\n    \"https://api1.example.com\",\n    \"https://api2.example.com\"\n  ],\n  \"interval\": 60000,\n  \"log\": true,\n  \"format\": \"table\"\n}"
+    },
+    "environment": {
+      "title": "Environment Variables",
+      "description": "You can use environment variables to configure the CLI",
+      "variables": [
+        {
+          "name": "PING_ME_API_KEY",
+          "description": "Your Ping-Me API key"
+        },
+        {
+          "name": "PING_ME_INTERVAL",
+          "description": "Default ping interval in milliseconds"
+        },
+        {
+          "name": "PING_ME_LOG",
+          "description": "Enable detailed logging (true/false)"
+        },
+        {
+          "name": "PING_ME_FORMAT",
+          "description": "Default output format (json/table/text)"
+        }
+      ]
+    }
+  },
+  "integrations": [
+    {
+      "title": "Using with Cron",
+      "description": "You can use cron to manage Ping-Me",
+      "code": "# Add to crontab to start Ping-Me every day at 9 AM\n0 9 * * * ping-me start -k YOUR_API_KEY -u https://api.example.com\n\n# Stop Ping-Me every day at 5 PM\n0 17 * * * ping-me stop -k YOUR_API_KEY"
+    },
+    {
+      "title": "Using with Docker",
+      "description": "You can run Ping-Me in a Docker container",
+      "code": "docker run -e PING_ME_API_KEY=your-api-key-here -e PING_ME_URLS=https://api.example.com pingme/cli:latest"
+    },
+    {
+      "title": "Using with CI/CD",
+      "description": "You can include Ping-Me in your CI/CD pipeline",
+      "code": "# GitHub Actions example\njobs:\n  keep-alive:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Keep services alive\n        run: |\n          npm install -g @ping-me/cli\n          ping-me start -k ${{ secrets.PING_ME_API_KEY }} -u ${{ secrets.SERVICE_URL }}"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Authentication Errors",
+        "description": "Error: Authentication failed. Invalid API key.",
+        "solutions": [
+          "Make sure your API key is correct and has the necessary permissions."
+        ]
+      },
+      {
+        "issue": "Connection Errors",
+        "description": "Error: Failed to ping https://api.example.com: connect ECONNREFUSED",
+        "solutions": [
+          "Check that the endpoint is accessible from your network",
+          "Verify that there are no firewalls blocking the connection",
+          "Ensure the endpoint URL is correct (including protocol)"
+        ]
+      },
+      {
+        "issue": "Rate Limiting",
+        "description": "Error: Rate limit exceeded. Please try again later.",
+        "solutions": [
+          "Try increasing the ping interval to reduce the frequency of requests."
+        ]
+      }
+    ],
+    "debugging": {
+      "title": "Debugging",
+      "description": "You can enable debug mode for more detailed information",
+      "code": "ping-me start -k YOUR_API_KEY -u https://api.example.com --debug"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "Store your API key securely. Consider using environment variables instead of command-line arguments.",
+      "Always use HTTPS URLs for your endpoints to ensure secure communication.",
+      "Don't set the ping interval too low, as this can lead to rate limiting and unnecessary resource usage."
+    ],
+    "performance": [
+      "For most services, a ping interval of 5-10 minutes is sufficient to keep them alive. Only use shorter intervals if necessary.",
+      "Be mindful of the resources consumed by the CLI. If monitoring many endpoints, consider using a dedicated machine or container.",
+      "If monitoring multiple endpoints, use batch commands instead of individual ones to reduce overhead."
+    ],
+    "reliability": [
+      "For critical services, use the service mode to ensure Ping-Me continues running even if your terminal session ends.",
+      "Set up alerts or regular status checks to ensure Ping-Me itself is running correctly.",
+      "For critical endpoints, consider setting up multiple instances of Ping-Me from different locations."
+    ]
+  }
+} 

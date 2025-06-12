@@ -1,0 +1,289 @@
+{
+  "name": "@ping-me/next",
+  "description": "Next.js integration for Ping-Me to keep your Next.js applications alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/next"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "next",
+    "nextjs",
+    "next.js",
+    "react",
+    "health-check"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": ">=9.0.0"
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "createPingHandler",
+        "description": "Creates a Next.js API route handler for the Pages Router that responds to ping requests.",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeNextOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": true
+          }
+        ],
+        "returns": "(req: NextApiRequest, res: NextApiResponse) => void",
+        "returnDescription": "A Next.js API route handler function"
+      },
+      {
+        "name": "createAppRouterPingHandler",
+        "description": "Creates a Next.js App Router route handler that responds to ping requests.",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeNextOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": true
+          }
+        ],
+        "returns": "(request: Request) => Response",
+        "returnDescription": "A Next.js App Router route handler function"
+      },
+      {
+        "name": "initPingMe",
+        "description": "Initializes the Ping-Me service for your Next.js application.",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeNextOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": true
+          }
+        ],
+        "returns": "PingMe",
+        "returnDescription": "An initialized PingMe instance"
+      },
+      {
+        "name": "getInstance",
+        "description": "Gets the singleton instance of the Ping-Me service.",
+        "parameters": [],
+        "returns": "PingMe | undefined",
+        "returnDescription": "The singleton PingMe instance, or undefined if it hasn't been initialized yet"
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "PingMeNextOptions",
+        "description": "Configuration options for the Next.js integration",
+        "properties": [
+          {
+            "name": "apiKey",
+            "type": "string",
+            "description": "Your Ping-Me API key",
+            "required": true
+          },
+          {
+            "name": "pingInterval",
+            "type": "number",
+            "description": "Ping interval in milliseconds (default: 5 minutes)",
+            "required": false
+          },
+          {
+            "name": "log",
+            "type": "boolean",
+            "description": "Whether to log ping events to the console (default: false)",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Custom message to return on the ping endpoint (default: 'OK')",
+            "required": false
+          },
+          {
+            "name": "autoStart",
+            "type": "boolean",
+            "description": "Whether to automatically start pinging (default: false)",
+            "required": false
+          },
+          {
+            "name": "apiEndpoint",
+            "type": "string",
+            "description": "Custom API endpoint URL (advanced usage)",
+            "required": false
+          },
+          {
+            "name": "baseUrl",
+            "type": "string",
+            "description": "Base URL of your application (will be auto-detected if not provided)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "pagesRouter": {
+      "title": "Pages Router (Next.js 9-13)",
+      "examples": [
+        {
+          "title": "API Route",
+          "description": "Create a ping endpoint in the Pages Router",
+          "code": "// pages/api/ping.js\nimport { createPingHandler } from '@ping-me/next';\n\nexport default createPingHandler({\n  apiKey: process.env.PING_ME_API_KEY\n});"
+        },
+        {
+          "title": "Initialize in _app.js",
+          "description": "Initialize Ping-Me in your application wrapper",
+          "code": "// pages/_app.js\nimport { AppProps } from 'next/app';\nimport { useEffect } from 'react';\nimport { initPingMe } from '@ping-me/next';\n\nfunction MyApp({ Component, pageProps }: AppProps) {\n  useEffect(() => {\n    // Initialize Ping-Me\n    const pingMe = initPingMe({\n      apiKey: process.env.PING_ME_API_KEY\n    });\n    \n    // Register the current service\n    pingMe.registerSelf();\n    \n    // Start pinging\n    pingMe.start();\n    \n    // Clean up on unmount\n    return () => {\n      pingMe.stop();\n    };\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;"
+        }
+      ]
+    },
+    "appRouter": {
+      "title": "App Router (Next.js 13+)",
+      "examples": [
+        {
+          "title": "API Route",
+          "description": "Create a ping endpoint in the App Router",
+          "code": "// app/api/ping/route.ts\nimport { NextResponse } from 'next/server';\nimport { createAppRouterPingHandler } from '@ping-me/next';\n\nexport const GET = createAppRouterPingHandler({\n  apiKey: process.env.PING_ME_API_KEY\n});"
+        },
+        {
+          "title": "Initialize in layout.tsx",
+          "description": "Initialize Ping-Me in your root layout",
+          "code": "// app/layout.tsx\nimport { initPingMe } from '@ping-me/next';\n\n// Server component initialization (runs once during build)\nconst pingMe = initPingMe({\n  apiKey: process.env.PING_ME_API_KEY,\n  autoStart: true // Automatically start pinging\n});\n\n// Register self for pinging\npingMe.registerSelf();\n\nexport default function RootLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return (\n    <html lang=\"en\">\n      <body>{children}</body>\n    </html>\n  );\n}"
+        }
+      ]
+    },
+    "advancedExamples": [
+      {
+        "title": "Custom Response Message",
+        "description": "Customize the response returned by the ping endpoint",
+        "code": "// pages/api/ping.js\nimport { createPingHandler } from '@ping-me/next';\n\nexport default createPingHandler({\n  apiKey: process.env.PING_ME_API_KEY,\n  message: JSON.stringify({\n    status: 'healthy',\n    version: process.env.npm_package_version,\n    environment: process.env.NODE_ENV,\n    timestamp: new Date().toISOString()\n  })\n});"
+      },
+      {
+        "title": "Ping Multiple Services",
+        "description": "Monitor multiple services in addition to your Next.js app",
+        "code": "// pages/_app.js\nimport { useEffect } from 'react';\nimport { initPingMe } from '@ping-me/next';\n\nfunction MyApp({ Component, pageProps }) {\n  useEffect(() => {\n    const pingMe = initPingMe({\n      apiKey: process.env.PING_ME_API_KEY\n    });\n    \n    // Register the current service\n    pingMe.registerSelf();\n    \n    // Register additional services\n    pingMe.register([\n      'https://api.example.com',\n      'https://auth.example.com',\n      'https://db.example.com'\n    ]);\n    \n    pingMe.start();\n    \n    return () => pingMe.stop();\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;"
+      },
+      {
+        "title": "Environment-Specific Configuration",
+        "description": "Configure Ping-Me differently based on the environment",
+        "code": "// pages/_app.js\nimport { useEffect } from 'react';\nimport { initPingMe } from '@ping-me/next';\n\nfunction MyApp({ Component, pageProps }) {\n  useEffect(() => {\n    // Only enable Ping-Me in production\n    if (process.env.NODE_ENV === 'production') {\n      const pingMe = initPingMe({\n        apiKey: process.env.PING_ME_API_KEY,\n        pingInterval: 60000 // 1 minute in production\n      });\n      \n      pingMe.registerSelf();\n      pingMe.start();\n      \n      return () => pingMe.stop();\n    }\n    \n    // In development, we might want a longer interval or none at all\n    if (process.env.NODE_ENV === 'development' && process.env.ENABLE_PING_ME === 'true') {\n      const pingMe = initPingMe({\n        apiKey: process.env.PING_ME_API_KEY,\n        pingInterval: 300000 // 5 minutes in development\n      });\n      \n      pingMe.registerSelf();\n      pingMe.start();\n      \n      return () => pingMe.stop();\n    }\n    \n    // No Ping-Me in test environment\n    return undefined;\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;"
+      },
+      {
+        "title": "Health Check with Database Status",
+        "description": "Create a more comprehensive health check endpoint",
+        "code": "// pages/api/health.js\nimport { PrismaClient } from '@prisma/client';\nimport { getInstance } from '@ping-me/next';\n\nconst prisma = new PrismaClient();\n\nexport default async function handler(req, res) {\n  try {\n    // Check database connection\n    let dbStatus = 'unknown';\n    try {\n      // Simple query to check if database is responding\n      await prisma.$queryRaw`SELECT 1`;\n      dbStatus = 'connected';\n    } catch (dbError) {\n      console.error('Database check failed:', dbError);\n      dbStatus = 'disconnected';\n    }\n    \n    // Get the Ping-Me instance to check its status\n    const pingMe = getInstance();\n    const pingMeStatus = pingMe ? pingMe.getStatus() : { isActive: false };\n    \n    // Get memory usage\n    const memoryUsage = process.memoryUsage();\n    \n    // Return comprehensive health information\n    res.status(200).json({\n      status: dbStatus === 'connected' ? 'healthy' : 'degraded',\n      uptime: process.uptime(),\n      database: dbStatus,\n      pingMe: {\n        active: pingMeStatus.isActive,\n        endpoints: pingMeStatus.endpoints || [],\n        interval: pingMeStatus.pingInterval\n      },\n      memory: {\n        rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',\n        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',\n        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB'\n      },\n      environment: process.env.NODE_ENV,\n      version: process.env.npm_package_version,\n      timestamp: new Date().toISOString()\n    });\n  } catch (error) {\n    console.error('Health check failed:', error);\n    res.status(500).json({\n      status: 'unhealthy',\n      error: error.message,\n      timestamp: new Date().toISOString()\n    });\n  }\n}\n\n// Register this endpoint with Ping-Me\nif (process.env.NODE_ENV === 'production') {\n  const pingMe = getInstance();\n  if (pingMe) {\n    // Use the /api/health endpoint instead of /api/ping\n    pingMe.register(['/api/health']);\n  }\n}"
+      },
+      {
+        "title": "With Next.js Middleware",
+        "description": "Exclude the ping endpoint from middleware processing",
+        "code": "// middleware.ts\nimport { NextResponse } from 'next/server';\nimport type { NextRequest } from 'next/server';\n\nexport function middleware(request: NextRequest) {\n  // Skip middleware processing for ping endpoint\n  if (request.nextUrl.pathname === '/api/ping') {\n    return NextResponse.next();\n  }\n  \n  // Your middleware logic here\n  // ...\n  \n  return NextResponse.next();\n}\n\nexport const config = {\n  matcher: [\n    /*\n     * Match all request paths except for:\n     * - _next/static (static files)\n     * - _next/image (image optimization files)\n     * - favicon.ico (favicon file)\n     * - api/ping (ping endpoint)\n     */\n    '/((?!_next/static|_next/image|favicon.ico|api/ping).*)',\n  ],\n};"
+      },
+      {
+        "title": "With Edge Runtime",
+        "description": "Using Ping-Me with Next.js Edge Runtime",
+        "code": "// app/api/ping/route.ts\nimport { createAppRouterPingHandler } from '@ping-me/next';\n\nexport const runtime = 'edge';\n\nexport const GET = createAppRouterPingHandler({\n  apiKey: process.env.PING_ME_API_KEY,\n  message: JSON.stringify({\n    status: 'healthy',\n    runtime: 'edge',\n    timestamp: new Date().toISOString()\n  })\n});"
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "title": "With Internationalized Routing (i18n)",
+      "description": "Using Ping-Me with Next.js internationalized routing",
+      "code": "// next.config.js\nmodule.exports = {\n  i18n: {\n    locales: ['en', 'fr', 'de'],\n    defaultLocale: 'en',\n  },\n}\n\n// pages/api/ping.js - This will work across all locales\nimport { createPingHandler } from '@ping-me/next';\n\nexport default createPingHandler({\n  apiKey: process.env.PING_ME_API_KEY\n});"
+    },
+    {
+      "title": "With Next.js API Routes Authorization",
+      "description": "Excluding the ping endpoint from API route authorization",
+      "code": "// pages/api/ping.js\nimport { createPingHandler } from '@ping-me/next';\n\n// The ping endpoint should be publicly accessible, so we bypass authorization\nexport default function handler(req, res) {\n  // Use the Ping-Me handler directly without authorization middleware\n  return createPingHandler({\n    apiKey: process.env.PING_ME_API_KEY\n  })(req, res);\n}\n\n// Other API routes with authorization\n// pages/api/protected.js\nimport { withAuth } from '../lib/auth';\n\nfunction protectedHandler(req, res) {\n  // Protected route logic\n  res.status(200).json({ message: 'Protected data' });\n}\n\nexport default withAuth(protectedHandler);"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Ping Endpoint Not Responding",
+        "solutions": [
+          "Verify the API route exists and is correctly implemented",
+          "Check that the route is accessible from outside your network",
+          "Ensure no middleware is blocking the route",
+          "For the App Router, make sure you're using the correct export format"
+        ]
+      },
+      {
+        "issue": "Service Not Being Monitored",
+        "solutions": [
+          "Verify that your API key is correct",
+          "Check that the ping endpoint is accessible from the internet",
+          "Confirm that initPingMe is called and pingMe.start() is executed",
+          "Check the Ping-Me dashboard for any alerts or errors"
+        ]
+      },
+      {
+        "issue": "Multiple Instances Problem",
+        "solutions": [
+          "Make sure you're only calling initPingMe once in your application",
+          "Use getInstance() to access the Ping-Me instance elsewhere",
+          "In development mode with hot reloading, check if an instance already exists before creating a new one"
+        ],
+        "code": "// pages/_app.js\nimport { useEffect } from 'react';\nimport { initPingMe, getInstance } from '@ping-me/next';\n\nfunction MyApp({ Component, pageProps }) {\n  useEffect(() => {\n    // Check if an instance already exists before creating a new one\n    let pingMe = getInstance();\n    \n    if (!pingMe) {\n      pingMe = initPingMe({\n        apiKey: process.env.PING_ME_API_KEY\n      });\n    }\n    \n    pingMe.registerSelf();\n    \n    if (!pingMe.getStatus().isActive) {\n      pingMe.start();\n    }\n    \n    return () => {\n      // Only stop if this effect created the instance\n      if (pingMe && pingMe.getStatus().isActive) {\n        pingMe.stop();\n      }\n    };\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;"
+      },
+      {
+        "issue": "Environment Variable Issues",
+        "solutions": [
+          "Make sure your .env or .env.local file contains the PING_ME_API_KEY",
+          "For Next.js, ensure environment variables that should be available on the client side are prefixed with NEXT_PUBLIC_",
+          "Verify that your environment variables are properly loaded in your deployment environment"
+        ]
+      }
+    ]
+  },
+  "bestPractices": {
+    "security": [
+      "Store your API key in environment variables, never hardcode it",
+      "The ping endpoint is designed to be publicly accessible, but don't put sensitive information in the response",
+      "Consider implementing rate limiting for the ping endpoint to prevent abuse"
+    ],
+    "performance": [
+      "Keep your ping endpoint lightweight to avoid unnecessary resource usage",
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary traffic",
+      "Consider using Edge Runtime for the ping endpoint for faster response times"
+    ],
+    "reliability": [
+      "Implement robust error handling in your application to ensure it remains stable even if there are issues with the ping service",
+      "Enable logging to help diagnose any issues with the ping service",
+      "Ensure proper cleanup by stopping the ping service when your application is shutting down"
+    ]
+  },
+  "deployment": {
+    "vercel": {
+      "title": "Vercel",
+      "steps": [
+        "Add your PING_ME_API_KEY to the Environment Variables section in your project settings",
+        "For Serverless Functions, the ping endpoint works out of the box",
+        "For Edge Functions, make sure to use the Edge Runtime compatible handler"
+      ]
+    },
+    "other": {
+      "title": "Other Providers",
+      "steps": [
+        "Ensure your API key is set in the environment",
+        "Verify that the ping endpoint is accessible from the internet",
+        "Check if the provider has any specific requirements for API routes"
+      ]
+    }
+  }
+} 

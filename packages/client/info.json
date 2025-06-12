@@ -1,0 +1,238 @@
+{
+  "name": "@ping-me/client",
+  "description": "Client library for Ping-Me to keep your services alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/client"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "client",
+    "express",
+    "next",
+    "fastify",
+    "koa",
+    "hono"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*"
+  },
+  "apis": {
+    "classes": [
+      {
+        "name": "PingMe",
+        "description": "Client class that extends the core PingMe functionality with framework detection and additional utilities.",
+        "extends": "CorePingMe",
+        "constructor": {
+          "parameters": [
+            {
+              "name": "options",
+              "type": "PingMeOptions",
+              "description": "Configuration options for the PingMe instance",
+              "required": true
+            }
+          ]
+        },
+        "methods": [
+          {
+            "name": "registerFromEnv",
+            "description": "Register endpoints from environment variables",
+            "parameters": [
+              {
+                "name": "prefix",
+                "type": "string",
+                "description": "Prefix for environment variables (default: 'PING_ME_ENDPOINT_')",
+                "required": false
+              }
+            ],
+            "returns": "this",
+            "returnDescription": "The PingMe instance for chaining"
+          },
+          {
+            "name": "registerSelf",
+            "description": "Register the current application as an endpoint",
+            "parameters": [
+              {
+                "name": "path",
+                "type": "string",
+                "description": "Path to use for the ping endpoint (default: '/')",
+                "required": false
+              },
+              {
+                "name": "port",
+                "type": "number",
+                "description": "Port to use for the ping endpoint (default: auto-detected)",
+                "required": false
+              },
+              {
+                "name": "framework",
+                "type": "string",
+                "description": "Framework to use for the ping endpoint (default: auto-detected)",
+                "required": false
+              }
+            ],
+            "returns": "this",
+            "returnDescription": "The PingMe instance for chaining"
+          },
+          {
+            "name": "createPingHandler",
+            "description": "Create a handler for ping requests",
+            "parameters": [],
+            "returns": "(req: any, res: any) => void",
+            "returnDescription": "A function that handles ping requests"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "init",
+        "description": "Initialize a new PingMe instance and store it as a singleton",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "PingMeOptions",
+            "description": "Configuration options for the PingMe instance",
+            "required": true
+          }
+        ],
+        "returns": "PingMe",
+        "returnDescription": "The initialized PingMe instance"
+      },
+      {
+        "name": "getInstance",
+        "description": "Get the singleton instance of PingMe",
+        "parameters": [],
+        "returns": "PingMe | undefined",
+        "returnDescription": "The singleton PingMe instance, or undefined if it hasn't been initialized yet"
+      }
+    ]
+  },
+  "frameworks": [
+    {
+      "name": "Express.js",
+      "description": "Integration with Express.js",
+      "example": "import express from 'express';\nimport { PingMe } from '@ping-me/client';\n\nconst app = express();\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register the current application\npingMe.registerSelf();\n\n// You can also create a custom ping endpoint\napp.get('/health', pingMe.createPingHandler());\n\n// Start pinging\npingMe.start();\n\napp.listen(3000);"
+    },
+    {
+      "name": "Next.js",
+      "description": "Integration with Next.js",
+      "example": "// pages/_app.js\nimport { useEffect } from 'react';\nimport { init } from '@ping-me/client';\n\nfunction MyApp({ Component, pageProps }) {\n  useEffect(() => {\n    const pingMe = init({\n      apiKey: process.env.PING_ME_API_KEY\n    });\n    \n    pingMe.registerSelf();\n    pingMe.start();\n    \n    return () => pingMe.stop();\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n\nexport default MyApp;\n\n// pages/api/ping.js\nimport { getInstance } from '@ping-me/client';\n\nexport default function handler(req, res) {\n  const pingMe = getInstance();\n  if (pingMe) {\n    return pingMe.createPingHandler()(req, res);\n  }\n  res.status(500).json({ error: 'Ping-Me not initialized' });\n}"
+    },
+    {
+      "name": "Fastify",
+      "description": "Integration with Fastify",
+      "example": "import fastify from 'fastify';\nimport { PingMe } from '@ping-me/client';\n\nconst app = fastify();\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register the current application\npingMe.registerSelf();\n\n// Start pinging\npingMe.start();\n\n// Define a custom ping route if desired\napp.get('/health', (request, reply) => {\n  reply.send({ status: 'healthy' });\n});\n\napp.listen({ port: 3000 });"
+    },
+    {
+      "name": "Koa",
+      "description": "Integration with Koa",
+      "example": "import Koa from 'koa';\nimport Router from '@koa/router';\nimport { PingMe } from '@ping-me/client';\n\nconst app = new Koa();\nconst router = new Router();\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register the current application\npingMe.registerSelf();\n\n// Start pinging\npingMe.start();\n\n// Define a custom ping route if desired\nrouter.get('/health', (ctx) => {\n  ctx.body = { status: 'healthy' };\n});\n\napp.use(router.routes());\napp.listen(3000);"
+    },
+    {
+      "name": "Hono",
+      "description": "Integration with Hono",
+      "example": "import { Hono } from 'hono';\nimport { PingMe } from '@ping-me/client';\n\nconst app = new Hono();\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register the current application\npingMe.registerSelf();\n\n// Start pinging\npingMe.start();\n\n// Define a custom ping route if desired\napp.get('/health', (c) => {\n  return c.json({ status: 'healthy' });\n});\n\nexport default app;"
+    }
+  ],
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Simple example of using the client library",
+      "code": "import { PingMe } from '@ping-me/client';\n\n// Initialize with your API key\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register endpoints to keep alive\npingMe.register([\n  'https://your-api.example.com',\n  'https://your-app.example.com',\n]);\n\n// Start the ping service\npingMe.start();\n\n// Later, when your application is shutting down\npingMe.stop();"
+    },
+    "advancedExamples": [
+      {
+        "title": "Custom Success and Error Handlers",
+        "description": "Using custom success and error handlers",
+        "code": "import { PingMe } from '@ping-me/client';\n\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here',\n  onSuccess: (endpoint, responseTime) => {\n    console.log(`✅ Successfully pinged ${endpoint} in ${responseTime}ms`);\n    // You could send metrics to your monitoring system\n  },\n  onError: async (error, endpoint) => {\n    console.error(`❌ Failed to ping ${endpoint}: ${error.message}`);\n    \n    // Send an alert\n    await sendAlert(`Endpoint ${endpoint} is down: ${error.message}`);\n    \n    // Try to restart the service\n    await attemptServiceRestart(endpoint);\n  }\n});\n\npingMe.register(['https://api.example.com']);\npingMe.start();\n\nasync function sendAlert(message) {\n  // Your alert logic here\n}\n\nasync function attemptServiceRestart(endpoint) {\n  // Your service restart logic here\n}"
+      },
+      {
+        "title": "Dynamic Ping Intervals",
+        "description": "Changing ping intervals dynamically",
+        "code": "import { PingMe } from '@ping-me/client';\n\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\npingMe.register(['https://api.example.com']);\npingMe.start();\n\n// Set up a schedule to change ping intervals\nconst businessHoursInterval = 60000; // 1 minute\nconst offHoursInterval = 300000; // 5 minutes\n\nfunction updatePingInterval() {\n  const hour = new Date().getHours();\n  // Business hours: 9 AM to 5 PM\n  if (hour >= 9 && hour < 17) {\n    pingMe.setPingInterval(businessHoursInterval);\n  } else {\n    pingMe.setPingInterval(offHoursInterval);\n  }\n}\n\n// Update interval every hour\nsetInterval(updatePingInterval, 3600000);\n// Initial update\nupdateInterval();"
+      },
+      {
+        "title": "Using with Environment Variables",
+        "description": "Configuring the client using environment variables",
+        "code": "import { PingMe } from '@ping-me/client';\nimport dotenv from 'dotenv';\n\n// Load environment variables\ndotenv.config();\n\nconst API_KEY = process.env.PING_ME_API_KEY;\nif (!API_KEY) {\n  throw new Error('PING_ME_API_KEY environment variable is required');\n}\n\nconst pingMe = new PingMe({\n  apiKey: API_KEY,\n  pingInterval: parseInt(process.env.PING_ME_INTERVAL || '300000', 10),\n  autoStart: process.env.PING_ME_AUTO_START === 'true'\n});\n\n// Register endpoints from environment variables\npingMe.registerFromEnv();\n\n// Register the current application if enabled\nif (process.env.PING_ME_REGISTER_SELF === 'true') {\n  pingMe.registerSelf();\n}\n\n// Start if not auto-started\nif (!pingMe.getStatus().isActive) {\n  pingMe.start();\n}\n\n// Handle process shutdown\nprocess.on('SIGINT', () => {\n  console.log('Stopping ping service...');\n  pingMe.stop();\n  process.exit(0);\n});"
+      },
+      {
+        "title": "Custom Ping Handler",
+        "description": "Creating a custom ping handler with additional information",
+        "code": "import express from 'express';\nimport { PingMe } from '@ping-me/client';\n\nconst app = express();\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here'\n});\n\n// Register and start\npingMe.registerSelf();\npingMe.start();\n\n// Create a custom health check endpoint with additional information\napp.get('/health', (req, res) => {\n  const memoryUsage = process.memoryUsage();\n  \n  res.json({\n    status: 'healthy',\n    ping_me: pingMe.getStatus(),\n    uptime: process.uptime(),\n    memory: {\n      rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB',\n      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',\n      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB'\n    },\n    version: process.env.npm_package_version,\n    node_version: process.version,\n    environment: process.env.NODE_ENV,\n    timestamp: new Date().toISOString()\n  });\n});\n\napp.listen(3000);"
+      },
+      {
+        "title": "Monitoring External Services",
+        "description": "Using the client to monitor external services",
+        "code": "import { PingMe } from '@ping-me/client';\n\n// Initialize Ping-Me\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here',\n  onError: async (error, endpoint) => {\n    console.error(`Service ${endpoint} is down: ${error.message}`);\n    \n    // Get the service name from the endpoint URL\n    const url = new URL(endpoint);\n    const serviceName = url.hostname.split('.')[0];\n    \n    // Send an alert about the service being down\n    await sendServiceDownAlert(serviceName, error.message);\n  }\n});\n\n// Register your own service\npingMe.registerSelf();\n\n// Register external services that your application depends on\npingMe.register([\n  'https://auth-service.example.com/health',\n  'https://database-service.example.com/health',\n  'https://storage-service.example.com/health',\n  'https://search-service.example.com/health'\n]);\n\n// Start pinging\npingMe.start();\n\nasync function sendServiceDownAlert(serviceName, errorMessage) {\n  // Your alert logic here\n  console.log(`ALERT: ${serviceName} is down - ${errorMessage}`);\n}"
+      }
+    ]
+  },
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "API Key Issues",
+        "solutions": [
+          "Make sure your API key is valid and correctly formatted",
+          "Check that your API key has the necessary permissions",
+          "Verify that your account is active and in good standing",
+          "Try generating a new API key from the dashboard"
+        ]
+      },
+      {
+        "issue": "Connection Issues",
+        "solutions": [
+          "Check that the endpoints are accessible from the environment where ping-me is running",
+          "Verify that there are no network restrictions or firewalls blocking the connections",
+          "Check if the endpoints require authentication or special headers",
+          "Try pinging the endpoints manually to confirm they're reachable"
+        ]
+      },
+      {
+        "issue": "Framework Detection Issues",
+        "solutions": [
+          "Make sure your framework is supported (Express, Next.js, Fastify, Koa, Hono)",
+          "Try calling registerSelf() after your framework is fully initialized",
+          "If needed, specify the framework manually: pingMe.registerSelf('/', 3000, 'express')"
+        ]
+      }
+    ],
+    "debugging": {
+      "title": "Debugging",
+      "description": "Enable debug mode for more detailed logging",
+      "code": "import { PingMe } from '@ping-me/client';\n\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key-here',\n  debug: true // Enable debug mode\n});\n\npingMe.registerSelf();\npingMe.start();"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "Never hardcode your API key in your code. Use environment variables or a secure configuration management system.",
+      "Only give the ping service access to the endpoints it needs to monitor.",
+      "Always use HTTPS URLs for your endpoints to ensure secure communication."
+    ],
+    "performance": [
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary network traffic.",
+      "Consider implementing logic to ping only during certain hours or when your service is likely to be idle.",
+      "If monitoring many endpoints, consider staggering the pings to avoid network congestion."
+    ],
+    "reliability": [
+      "Implement robust error handling to ensure the ping service continues to function even if some pings fail.",
+      "Always call stop() when your application is shutting down to ensure clean termination.",
+      "Set up a secondary monitoring system to ensure your ping service itself is running correctly."
+    ]
+  }
+} 

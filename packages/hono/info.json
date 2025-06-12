@@ -1,0 +1,268 @@
+{
+  "name": "@ping-me/hono",
+  "description": "Hono middleware for Ping-Me to keep your Hono applications alive and monitor their health.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/hono"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "hono",
+    "middleware",
+    "health-check",
+    "cloudflare",
+    "workers",
+    "deno",
+    "bun"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@ping-me/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "hono": ">=3.0.0"
+  },
+  "apis": {
+    "functions": [
+      {
+        "name": "withPingMe",
+        "description": "Adds Ping-Me functionality to a Hono application.",
+        "parameters": [
+          {
+            "name": "app",
+            "type": "Hono",
+            "description": "A Hono application instance",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "PingMeHonoOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": false
+          }
+        ],
+        "returns": "{ stopPinging: () => void, pingUrl: string }",
+        "returnDescription": "An object with a function to stop pinging and the full ping URL"
+      },
+      {
+        "name": "withPingMeHono",
+        "description": "Alias for withPingMe for backward compatibility",
+        "parameters": [
+          {
+            "name": "app",
+            "type": "Hono",
+            "description": "A Hono application instance",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "PingMeHonoOptions",
+            "description": "Configuration options for Ping-Me",
+            "required": false
+          }
+        ],
+        "returns": "{ stopPinging: () => void, pingUrl: string }",
+        "returnDescription": "An object with a function to stop pinging and the full ping URL"
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "PingMeHonoOptions",
+        "description": "Configuration options for the withPingMe function",
+        "properties": [
+          {
+            "name": "apiKey",
+            "type": "string",
+            "description": "Your Ping-Me API key",
+            "required": false
+          },
+          {
+            "name": "route",
+            "type": "string",
+            "description": "The route to use for the ping endpoint (default: '/ping-me')",
+            "required": false
+          },
+          {
+            "name": "interval",
+            "type": "number",
+            "description": "Ping interval in milliseconds (default: 5 minutes)",
+            "required": false
+          },
+          {
+            "name": "log",
+            "type": "boolean",
+            "description": "Whether to log ping events to the console (default: true)",
+            "required": false
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Custom message to return on the ping endpoint (default: 'Ping-Me: Hono server is up and running')",
+            "required": false
+          },
+          {
+            "name": "autoStart",
+            "type": "boolean",
+            "description": "Whether to automatically start pinging (default: true)",
+            "required": false
+          },
+          {
+            "name": "apiEndpoint",
+            "type": "string",
+            "description": "Custom API endpoint URL (advanced usage)",
+            "required": false
+          },
+          {
+            "name": "baseUrl",
+            "type": "string",
+            "description": "Base URL of your application (required for auto-pinging)",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Simple example of using the Hono middleware",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\n// Add Ping-Me to your app with default settings\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com' // Required for auto-pinging\n});\n\napp.get('/', (c) => c.text('Hello Hono!'));\n\nexport default app;"
+    },
+    "typescript": {
+      "title": "TypeScript Usage",
+      "description": "Using the Hono middleware with TypeScript",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe, PingMeHonoOptions } from '@ping-me/hono';\n\nconst app = new Hono();\n\nconst pingMeOptions: PingMeHonoOptions = {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  route: '/health'\n};\n\nwithPingMe(app, pingMeOptions);\n\napp.get('/', (c) => c.text('Hello Hono!'));\n\nexport default app;"
+    },
+    "advancedExamples": [
+      {
+        "title": "Custom Response Format",
+        "description": "Customizing the ping endpoint response",
+        "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  message: JSON.stringify({\n    status: 'ok',\n    version: '1.0.0',\n    timestamp: new Date().toISOString()\n  })\n});\n\nexport default app;"
+      },
+      {
+        "title": "Custom Health Check Handler",
+        "description": "Implementing a more sophisticated health check",
+        "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\n// Define a custom health route\napp.get('/health', async (c) => {\n  try {\n    // Check database connection (example)\n    // Replace with your actual health checks\n    const dbStatus = await checkDatabaseConnection();\n    \n    // Get memory usage if available in your environment\n    const memoryInfo = getSystemInfo();\n    \n    return c.json({\n      status: 'healthy',\n      services: {\n        database: dbStatus ? 'connected' : 'disconnected'\n      },\n      system: memoryInfo,\n      timestamp: new Date().toISOString()\n    });\n  } catch (error) {\n    c.status(500);\n    return c.json({\n      status: 'unhealthy',\n      error: error.message\n    });\n  }\n});\n\n// Use withPingMe with the custom health route\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  route: '/health' // Same as our custom health route\n});\n\n// Mock functions for the example\nasync function checkDatabaseConnection() {\n  // Your database check logic\n  return true;\n}\n\nfunction getSystemInfo() {\n  // Your system info logic\n  return {\n    environment: process.env.NODE_ENV || 'development'\n  };\n}\n\nexport default app;"
+      },
+      {
+        "title": "Using with Environment Variables",
+        "description": "Loading configuration from environment variables",
+        "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\n// Get configuration from environment variables\nconst pingMeOptions = {\n  apiKey: process.env.PING_ME_API_KEY,\n  route: process.env.PING_ME_ROUTE || '/health',\n  interval: parseInt(process.env.PING_ME_INTERVAL || '300000', 10),\n  log: process.env.PING_ME_LOG !== 'false',\n  autoStart: process.env.PING_ME_AUTO_START !== 'false',\n  baseUrl: process.env.BASE_URL || 'http://localhost:3000'\n};\n\n// Only add Ping-Me if API key is provided\nif (pingMeOptions.apiKey) {\n  withPingMe(app, pingMeOptions);\n  console.log(`Ping-Me initialized with route: ${pingMeOptions.route}`);\n} else {\n  console.warn('Ping-Me API key not provided. Ping-Me is disabled.');\n}\n\napp.get('/', (c) => c.text('Hello Hono!'));\n\nexport default app;"
+      },
+      {
+        "title": "With Middlewares and Routes Groups",
+        "description": "Using Ping-Me with Hono's route grouping",
+        "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\nimport { logger } from 'hono/logger';\nimport { cors } from 'hono/cors';\n\nconst app = new Hono();\n\n// Apply global middlewares\napp.use('*', logger());\napp.use('*', cors());\n\n// API routes\nconst api = new Hono();\napi.get('/users', (c) => c.json({ users: [] }));\napi.get('/products', (c) => c.json({ products: [] }));\n\n// Mount API routes under /api\napp.route('/api', api);\n\n// Add Ping-Me with a health route\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  route: '/health'\n});\n\nexport default app;"
+      },
+      {
+        "title": "Stopping the Ping Service",
+        "description": "Manually stopping the ping service",
+        "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\n// Initialize Ping-Me and get the control functions\nconst { stopPinging, pingUrl } = withPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com'\n});\n\nconsole.log(`Pinging URL: ${pingUrl}`);\n\n// Later, when you want to stop pinging\n// For example, when shutting down the server\nfunction handleShutdown() {\n  console.log('Stopping Ping-Me service...');\n  stopPinging();\n  console.log('Ping-Me service stopped');\n}\n\n// In Node.js environments, handle process signals\nif (typeof process !== 'undefined') {\n  process.on('SIGINT', handleShutdown);\n  process.on('SIGTERM', handleShutdown);\n}\n\nexport default app;"
+      }
+    ]
+  },
+  "environments": [
+    {
+      "title": "Cloudflare Workers",
+      "description": "Using Ping-Me with Hono in Cloudflare Workers",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\n\nconst app = new Hono();\n\n// Add a ping endpoint\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-worker.your-subdomain.workers.dev',\n  route: '/health'\n});\n\napp.get('/', (c) => c.text('Hello from Cloudflare Workers!'));\n\nexport default app;"
+    },
+    {
+      "title": "Deno",
+      "description": "Using Ping-Me with Hono in Deno",
+      "code": "import { Hono } from 'https://deno.land/x/hono/mod.ts';\nimport { withPingMe } from 'npm:@ping-me/hono';\n\nconst app = new Hono();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-deno-app.deno.dev',\n  route: '/health'\n});\n\napp.get('/', (c) => c.text('Hello from Deno!'));\n\nDeno.serve(app.fetch);"
+    },
+    {
+      "title": "Bun",
+      "description": "Using Ping-Me with Hono in Bun",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\nimport { serve } from 'bun';\n\nconst app = new Hono();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-bun-app.example.com',\n  route: '/health'\n});\n\napp.get('/', (c) => c.text('Hello from Bun!'));\n\nserve({\n  fetch: app.fetch,\n  port: 3000\n});"
+    }
+  ],
+  "integrations": [
+    {
+      "title": "With Rate Limiting",
+      "description": "Excluding the ping endpoint from rate limiting",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\nimport { RateLimiterMemory } from 'rate-limiter-flexible';\n\nconst app = new Hono();\n\n// Define the ping route\nconst PING_ROUTE = '/ping';\n\n// Create a rate limiter\nconst rateLimiter = new RateLimiterMemory({\n  points: 10, // Number of points\n  duration: 1, // Per second\n});\n\n// Add rate limiting middleware (exclude ping route)\napp.use('*', async (c, next) => {\n  // Skip rate limiting for ping endpoint\n  if (c.req.path === PING_ROUTE) {\n    return next();\n  }\n  \n  try {\n    // Get client IP\n    const ip = c.req.header('x-forwarded-for') || 'unknown';\n    await rateLimiter.consume(ip);\n    return next();\n  } catch (error) {\n    c.status(429);\n    return c.text('Too Many Requests');\n  }\n});\n\n// Add Ping-Me\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  route: PING_ROUTE\n});\n\nexport default app;"
+    },
+    {
+      "title": "With JWT Authentication",
+      "description": "Excluding the ping endpoint from authentication",
+      "code": "import { Hono } from 'hono';\nimport { withPingMe } from '@ping-me/hono';\nimport { verify } from 'hono/jwt';\n\nconst app = new Hono();\n\n// Define the ping route\nconst PING_ROUTE = '/ping';\n\n// JWT middleware\napp.use('*', async (c, next) => {\n  // Skip authentication for ping endpoint\n  if (c.req.path === PING_ROUTE) {\n    return next();\n  }\n  \n  const authHeader = c.req.header('Authorization');\n  if (!authHeader || !authHeader.startsWith('Bearer ')) {\n    c.status(401);\n    return c.text('Unauthorized');\n  }\n  \n  const token = authHeader.split(' ')[1];\n  try {\n    const payload = await verify(token, 'your-secret-key');\n    c.set('user', payload);\n    return next();\n  } catch (error) {\n    c.status(401);\n    return c.text('Invalid token');\n  }\n});\n\n// Add Ping-Me\nwithPingMe(app, {\n  apiKey: 'your-api-key-here',\n  baseUrl: 'https://your-app.example.com',\n  route: PING_ROUTE\n});\n\n// Protected route\napp.get('/protected', (c) => {\n  const user = c.get('user');\n  return c.json({ message: 'Protected data', user });\n});\n\nexport default app;"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Ping Endpoint Not Responding",
+        "solutions": [
+          "Check that the route is accessible from outside your network",
+          "Verify that no middleware is blocking the route",
+          "Check your server logs for errors",
+          "Try accessing the ping endpoint manually in a browser or with curl"
+        ]
+      },
+      {
+        "issue": "Auto-Pinging Not Working",
+        "solutions": [
+          "Make sure you provided a baseUrl option, which is required for auto-pinging",
+          "Check that the constructed ping URL (${baseUrl}${route}) is accessible",
+          "Verify that your API key is correct",
+          "Check the console for warnings or errors related to Ping-Me"
+        ]
+      },
+      {
+        "issue": "Service Not Being Monitored",
+        "solutions": [
+          "Verify that your API key is correct",
+          "Check that the ping endpoint is accessible from the internet",
+          "Verify that the ping interval is appropriate (not too long)",
+          "Check the Ping-Me dashboard for any alerts or errors"
+        ]
+      },
+      {
+        "issue": "Environment-Specific Issues",
+        "solutions": [
+          "For Cloudflare Workers: Make sure your worker has the necessary permissions and is not hitting CPU limits",
+          "For Deno: Use the correct import syntax for Deno (import from 'npm:@ping-me/hono')",
+          "For Bun: Make sure you're using the latest version of Bun, which has better compatibility"
+        ]
+      }
+    ],
+    "manual": {
+      "title": "Manually Testing the Ping Endpoint",
+      "description": "You can test the ping endpoint manually using curl",
+      "code": "curl http://localhost:3000/ping-me"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "The ping endpoint is designed to be publicly accessible. Don't put sensitive information in the response.",
+      "Consider applying rate limiting to the ping endpoint to prevent abuse, but make sure it doesn't block legitimate ping requests.",
+      "Always use HTTPS in production to ensure secure communication."
+    ],
+    "performance": [
+      "Keep your ping endpoint lightweight. Avoid heavy database queries or external API calls.",
+      "Choose a ping interval that balances keeping your service alive with minimizing unnecessary traffic.",
+      "Use the Ping-Me dashboard to monitor the performance of your ping endpoint."
+    ],
+    "reliability": [
+      "Implement robust error handling in your application to ensure it remains stable even if there are issues with the ping service.",
+      "Enable logging to help diagnose any issues with the ping service.",
+      "If possible, stop the ping service gracefully when shutting down your application."
+    ]
+  }
+} 

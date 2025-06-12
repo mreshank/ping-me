@@ -1,0 +1,69 @@
+{
+  "name": "keep-server-alive",
+  "description": "Keep your free tier backends alive with auto-pinging and monitoring (alias for ping-me)",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/keep-server-alive"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "keepwake",
+    "keep-server-alive"
+  ],
+  "main": "index.js",
+  "bin": {
+    "keep-server-alive": "./node_modules/ping-me/dist/cli.js",
+    "ping-me": "./node_modules/ping-me/dist/cli.js",
+    "keepwake": "./node_modules/ping-me/dist/cli.js"
+  },
+  "dependencies": {
+    "ping-me": "workspace:*"
+  },
+  "aliasFor": "ping-me",
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Import and use the package in your code",
+      "code": "// Import the package\nconst keepServerAlive = require('keep-server-alive');\n\n// Use it just like ping-me\nconst { stopPinging } = keepServerAlive.pingMe({\n  url: 'https://your-app.example.com',\n  interval: 60000 // 1 minute\n});\n\n// Stop pinging when needed\nprocess.on('SIGINT', () => {\n  stopPinging();\n  process.exit(0);\n});"
+    },
+    "cli": {
+      "title": "Command Line Usage",
+      "description": "Use the CLI tool to ping your endpoints",
+      "code": "# Basic usage\nnpx keep-server-alive --url https://your-app.example.com\n\n# Multiple endpoints\nnpx keep-server-alive --url https://api1.example.com --url https://api2.example.com\n\n# Custom interval (in milliseconds)\nnpx keep-server-alive --url https://your-app.example.com --interval 60000"
+    }
+  },
+  "relatedPackages": [
+    {
+      "name": "ping-me",
+      "description": "The main package that this package aliases to",
+      "url": "https://www.npmjs.com/package/ping-me"
+    },
+    {
+      "name": "keepwake",
+      "description": "Another alias package for ping-me",
+      "url": "https://www.npmjs.com/package/keepwake"
+    },
+    {
+      "name": "keepawake",
+      "description": "Another alias package for ping-me",
+      "url": "https://www.npmjs.com/package/keepawake"
+    }
+  ],
+  "notes": [
+    "This is an alias package that redirects to the main ping-me package",
+    "It exists for historical reasons and backward compatibility",
+    "It's recommended to use the main ping-me package directly for new projects"
+  ]
+} 

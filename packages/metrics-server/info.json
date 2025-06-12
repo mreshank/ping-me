@@ -1,0 +1,405 @@
+{
+  "name": "@ping-me/metrics-server",
+  "description": "A standalone metrics server for collecting, storing, and retrieving uptime and performance data from your services and applications.",
+  "version": "1.0.0",
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mreshank/ping-me",
+    "directory": "packages/metrics-server"
+  },
+  "homepage": "https://ping-me.eshank.tech",
+  "documentation": "https://ping-me.eshank.tech/docs",
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "metrics",
+    "analytics",
+    "server",
+    "api",
+    "database",
+    "logging",
+    "alerts"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express-rate-limit": "^7.3.0",
+    "nodemailer": "^6.9.11"
+  },
+  "prerequisites": [
+    {
+      "name": "Node.js",
+      "version": ">=18.0.0"
+    },
+    {
+      "name": "MongoDB",
+      "version": ">=4.0.0"
+    }
+  ],
+  "environmentVariables": [
+    {
+      "name": "MONGODB_URI",
+      "description": "MongoDB connection string",
+      "required": true,
+      "default": "mongodb://localhost:27017/ping-me"
+    },
+    {
+      "name": "PORT",
+      "description": "Server port",
+      "required": false,
+      "default": "5000"
+    },
+    {
+      "name": "ADMIN_API_KEY",
+      "description": "API key for admin access",
+      "required": true
+    },
+    {
+      "name": "MAX_LOGS_PER_ENDPOINT",
+      "description": "Maximum number of logs to keep per endpoint",
+      "required": false,
+      "default": "1000"
+    },
+    {
+      "name": "SMTP_HOST",
+      "description": "SMTP server for sending alerts",
+      "required": false
+    },
+    {
+      "name": "SMTP_PORT",
+      "description": "SMTP port",
+      "required": false,
+      "default": "587"
+    },
+    {
+      "name": "SMTP_USER",
+      "description": "SMTP username",
+      "required": false
+    },
+    {
+      "name": "SMTP_PASS",
+      "description": "SMTP password",
+      "required": false
+    },
+    {
+      "name": "FROM_EMAIL",
+      "description": "Email address to send alerts from",
+      "required": false,
+      "default": "alerts@ping-me.com"
+    }
+  ],
+  "apis": {
+    "endpoints": [
+      {
+        "path": "/api/health",
+        "method": "GET",
+        "description": "Health check endpoint",
+        "authentication": false,
+        "response": {
+          "status": "ok",
+          "timestamp": "ISO date string",
+          "version": "string",
+          "uptime": "number (seconds)",
+          "database": {
+            "status": "connected/disconnected",
+            "name": "string"
+          },
+          "environment": "development/production",
+          "alertsEnabled": "boolean"
+        }
+      },
+      {
+        "path": "/api/log",
+        "method": "POST",
+        "description": "Log a ping event",
+        "authentication": true,
+        "request": {
+          "endpoint": "string (URL)",
+          "status": "number (HTTP status code)",
+          "responseTime": "number (milliseconds)",
+          "timestamp": "ISO date string (optional)",
+          "error": "string (optional)"
+        },
+        "response": {
+          "success": "boolean",
+          "id": "string (log ID)"
+        }
+      },
+      {
+        "path": "/api/metrics",
+        "method": "GET",
+        "description": "Get metrics for endpoints",
+        "authentication": true,
+        "parameters": [
+          {
+            "name": "endpoint",
+            "description": "Filter by specific endpoint",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of logs to return",
+            "required": false,
+            "default": "100"
+          },
+          {
+            "name": "since",
+            "description": "Filter logs after this timestamp",
+            "required": false
+          }
+        ],
+        "response": {
+          "logs": "array of log objects",
+          "stats": "array of statistics per endpoint",
+          "totalEndpoints": "number"
+        }
+      },
+      {
+        "path": "/api/settings",
+        "method": "GET",
+        "description": "Get user settings",
+        "authentication": true,
+        "response": {
+          "settings": {
+            "pingInterval": "number (milliseconds)",
+            "alertEnabled": "boolean",
+            "alertThreshold": "number (milliseconds)",
+            "alertEmail": "string (email)"
+          }
+        }
+      },
+      {
+        "path": "/api/settings",
+        "method": "POST",
+        "description": "Update user settings",
+        "authentication": true,
+        "request": {
+          "pingInterval": "number (optional)",
+          "alertEnabled": "boolean (optional)",
+          "alertThreshold": "number (optional)",
+          "alertEmail": "string (optional)"
+        },
+        "response": {
+          "success": "boolean",
+          "settings": "settings object"
+        }
+      },
+      {
+        "path": "/api/users",
+        "method": "POST",
+        "description": "Create a new user and get an API key",
+        "authentication": false,
+        "request": {
+          "email": "string (email)"
+        },
+        "response": {
+          "apiKey": "string",
+          "settings": "settings object"
+        }
+      },
+      {
+        "path": "/api/regenerate-key",
+        "method": "POST",
+        "description": "Regenerate API key for a user",
+        "authentication": true,
+        "response": {
+          "apiKey": "string"
+        }
+      },
+      {
+        "path": "/api/users",
+        "method": "GET",
+        "description": "Get all users (admin only)",
+        "authentication": true,
+        "admin": true,
+        "response": {
+          "users": "array of user objects"
+        }
+      },
+      {
+        "path": "/api/users/:email",
+        "method": "DELETE",
+        "description": "Delete a user and all their data (admin only)",
+        "authentication": true,
+        "admin": true,
+        "parameters": [
+          {
+            "name": "email",
+            "description": "User email",
+            "required": true
+          }
+        ],
+        "response": {
+          "success": "boolean",
+          "message": "string"
+        }
+      }
+    ],
+    "models": [
+      {
+        "name": "User",
+        "description": "User model with API key and settings",
+        "schema": {
+          "email": "string (required, unique)",
+          "apiKey": "string (required, unique)",
+          "createdAt": "Date (default: now)",
+          "settings": {
+            "pingInterval": "number (default: 300000)",
+            "alertEnabled": "boolean (default: false)",
+            "alertThreshold": "number (default: 500)",
+            "alertEmail": "string"
+          }
+        }
+      },
+      {
+        "name": "PingLog",
+        "description": "Log entry for a ping event",
+        "schema": {
+          "apiKey": "string (required, indexed)",
+          "endpoint": "string (required)",
+          "timestamp": "Date (default: now)",
+          "status": "number (required)",
+          "responseTime": "number (required)",
+          "error": "string"
+        }
+      }
+    ]
+  },
+  "usage": {
+    "basic": {
+      "title": "Basic Usage",
+      "description": "Start the metrics server and create a user",
+      "code": "# Start the server\nnpm run start\n\n# Create a user to get an API key\ncurl -X POST http://localhost:5000/api/users \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"email\": \"your-email@example.com\"}'\n\n# Use the API key with any Ping-Me client"
+    },
+    "advancedExamples": [
+      {
+        "title": "Logging Pings Manually",
+        "description": "Manually log ping data using the API",
+        "code": "curl -X POST http://localhost:5000/api/log \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer your-api-key\" \\\n  -d '{\n    \"endpoint\": \"https://example.com/api\",\n    \"status\": 200,\n    \"responseTime\": 150,\n    \"error\": null\n  }'"
+      },
+      {
+        "title": "Retrieving Metrics",
+        "description": "Get metrics for monitored endpoints",
+        "code": "curl -X GET \"http://localhost:5000/api/metrics?limit=10\" \\\n  -H \"Authorization: Bearer your-api-key\""
+      },
+      {
+        "title": "Enabling Alerts",
+        "description": "Configure alerts for endpoint performance issues",
+        "code": "curl -X POST http://localhost:5000/api/settings \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer your-api-key\" \\\n  -d '{\n    \"alertEnabled\": true,\n    \"alertThreshold\": 500,\n    \"alertEmail\": \"alerts@example.com\"\n  }'"
+      },
+      {
+        "title": "Admin Operations",
+        "description": "Manage users with admin privileges",
+        "code": "# List all users\ncurl -X GET http://localhost:5000/api/users \\\n  -H \"Authorization: Bearer your-admin-api-key\"\n\n# Delete a user\ncurl -X DELETE http://localhost:5000/api/users/user@example.com \\\n  -H \"Authorization: Bearer your-admin-api-key\""
+      }
+    ]
+  },
+  "deployment": [
+    {
+      "title": "Docker Deployment",
+      "description": "Deploy the metrics server using Docker",
+      "code": "# Build the Docker image\ndocker build -t ping-me-metrics-server .\n\n# Run the container\ndocker run -p 5000:5000 \\\n  -e MONGODB_URI=mongodb://mongo:27017/ping-me \\\n  -e ADMIN_API_KEY=your-admin-api-key \\\n  ping-me-metrics-server"
+    },
+    {
+      "title": "Docker Compose",
+      "description": "Deploy with MongoDB using Docker Compose",
+      "code": "version: '3'\nservices:\n  app:\n    build: .\n    ports:\n      - \"5000:5000\"\n    environment:\n      - MONGODB_URI=mongodb://mongo:27017/ping-me\n      - ADMIN_API_KEY=your-admin-api-key\n    depends_on:\n      - mongo\n  \n  mongo:\n    image: mongo:5\n    ports:\n      - \"27017:27017\"\n    volumes:\n      - mongodb_data:/data/db\n\nvolumes:\n  mongodb_data:"
+    },
+    {
+      "title": "Environment Variables",
+      "description": "Example .env file configuration",
+      "code": "# MongoDB Connection\nMONGODB_URI=mongodb://localhost:27017/ping-me\n\n# Server Configuration\nPORT=5000\n\n# Security\nADMIN_API_KEY=your-admin-api-key\n\n# App Settings\nMAX_LOGS_PER_ENDPOINT=1000\n\n# Email Alerts\nSMTP_HOST=smtp.example.com\nSMTP_PORT=587\nSMTP_USER=your-email@example.com\nSMTP_PASS=your-password\nFROM_EMAIL=alerts@ping-me.com"
+    }
+  ],
+  "integrations": [
+    {
+      "title": "With @ping-me/client",
+      "description": "Use with the JavaScript client library",
+      "code": "import { PingMe } from '@ping-me/client';\n\nconst pingMe = new PingMe({\n  apiKey: 'your-api-key',\n  apiEndpoint: 'http://localhost:5000/api/log'\n});\n\npingMe.register(['https://your-api.example.com']);\npingMe.start();"
+    },
+    {
+      "title": "With @ping-me/express",
+      "description": "Use with Express.js applications",
+      "code": "const express = require('express');\nconst { withPingMe } = require('@ping-me/express');\n\nconst app = express();\n\nwithPingMe(app, {\n  apiKey: 'your-api-key',\n  apiEndpoint: 'http://localhost:5000/api/log'\n});\n\napp.listen(3000);"
+    },
+    {
+      "title": "With @ping-me/fastify",
+      "description": "Use with Fastify applications",
+      "code": "const fastify = require('fastify')();\nconst { withPingMe } = require('@ping-me/fastify');\n\nwithPingMe(fastify, {\n  apiKey: 'your-api-key',\n  apiEndpoint: 'http://localhost:5000/api/log'\n});\n\nfastify.listen({ port: 3000 });"
+    }
+  ],
+  "troubleshooting": {
+    "common": [
+      {
+        "issue": "Connection to MongoDB failed",
+        "solutions": [
+          "Check that MongoDB is running",
+          "Verify the connection string in the environment variables",
+          "Ensure network connectivity between the server and MongoDB",
+          "Check MongoDB user permissions"
+        ]
+      },
+      {
+        "issue": "Email Alerts Not Sending",
+        "solutions": [
+          "Verify SMTP settings",
+          "Check for firewall or network restrictions",
+          "Enable debug mode for more information",
+          "Try a different SMTP provider"
+        ]
+      },
+      {
+        "issue": "High Memory Usage",
+        "solutions": [
+          "Reduce the MAX_LOGS_PER_ENDPOINT value",
+          "Implement database indexes for better performance",
+          "Enable MongoDB compression",
+          "Consider adding pagination to API responses"
+        ]
+      },
+      {
+        "issue": "Rate Limiting Too Strict",
+        "solutions": [
+          "Adjust the rate limit settings in the code",
+          "Implement different rate limits for different endpoints",
+          "Use IP-based and API key-based rate limiting together"
+        ]
+      }
+    ],
+    "debugging": {
+      "title": "Enable Verbose Logging",
+      "description": "Get detailed logs for troubleshooting",
+      "code": "DEBUG=ping-me:* npm run dev"
+    }
+  },
+  "bestPractices": {
+    "security": [
+      "Regenerate API keys periodically",
+      "Always use HTTPS in production",
+      "Never hardcode sensitive information",
+      "Keep rate limiting enabled to prevent abuse",
+      "Restrict access to the server at the network level"
+    ],
+    "performance": [
+      "Create MongoDB indexes for frequently queried fields",
+      "Use a monitoring tool to track server performance",
+      "Enable response compression",
+      "Implement caching for frequent queries",
+      "Regularly optimize the database"
+    ],
+    "reliability": [
+      "Regularly backup the MongoDB database",
+      "Consider a replica set for MongoDB",
+      "Implement robust error handling",
+      "Set up comprehensive logging",
+      "Implement health checks for automated monitoring"
+    ]
+  }
+} 
