@@ -10,7 +10,6 @@
     "declaration": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "preserve"
   },
   "exclude": ["node_modules"]

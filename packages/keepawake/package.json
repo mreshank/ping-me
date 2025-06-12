@@ -1,0 +1,44 @@
+{
+  "name": "keepawake",
+  "version": "1.0.0",
+  "description": "Keep your free tier backends alive with auto-pinging and monitoring",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "files": [
+    "index.js",
+    "postinstall.js"
+  ],
+  "keywords": [
+    "ping",
+    "uptime",
+    "monitor",
+    "keep-alive",
+    "free-tier",
+    "backend",
+    "server",
+    "keepwake",
+    "keep-server-alive",
+    "keepawake"
+  ],
+  "author": "Eshank Tyagi",
+  "license": "MIT",
+  "dependencies": {
+    "ping-me": "^1.0.0"
+  },
+  "bin": {
+    "keepawake": "./node_modules/ping-me/dist/cli.js",
+    "ping-me": "./node_modules/ping-me/dist/cli.js",
+    "keep-server-alive": "./node_modules/ping-me/dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mreshank/ping-me.git",
+    "directory": "packages/keepawake"
+  },
+  "bugs": {
+    "url": "https://github.com/mreshank/ping-me/issues"
+  },
+  "homepage": "https://github.com/mreshank/ping-me#readme"
+} 

@@ -91,7 +91,7 @@ export class PingMe {
   private intervalId?: NodeJS.Timeout;
   private lastPingTimestamp?: number;
   private lastPingResults: Record<string, PingResult> = {};
-  private apiEndpoint = 'https://api.ping-me.app/v1/ping';
+  private apiEndpoint = 'https://ping-me.eshank.tech/api/v1/ping';
 
   /**
    * Create a new PingMe instance

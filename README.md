@@ -72,25 +72,61 @@ Ping-Me makes sure your backend never sleeps, and if it tries, you know about it
 ### NPM
 
 ```bash
-npm install @ping-me/client
+# Install using main package name
+npm install ping-me
+
+# Or use one of our alternative package names
+npm install keep-server-alive
+npm install keepwake
+npm install keepawake
 ```
 
 ### Yarn
 
 ```bash
-yarn add @ping-me/client
+yarn add ping-me
+# or
+yarn add keep-server-alive
+# or
+yarn add keepwake
+# or
+yarn add keepawake
 ```
 
 ### pnpm
 
 ```bash
-pnpm add @ping-me/client
+pnpm add ping-me
+# or
+pnpm add keep-server-alive
+# or
+pnpm add keepwake
+# or
+pnpm add keepawake
+```
+
+> **Note**: `ping-me`, `keep-server-alive`, `keepwake`, and `keepawake` are identical packages. Feel free to use whichever name you prefer!
+
+### Framework-specific packages
+
+```bash
+# If you need specific framework adapters
+npm install @ping-me/core
+npm install @ping-me/express
+npm install @ping-me/next
+# etc.
 ```
 
 ## 🚀 Quick Start
 
 ```javascript
-import { PingMe } from '@ping-me/client';
+import { PingMe } from 'ping-me';
+// OR
+import { PingMe } from 'keep-server-alive';
+// OR
+import { PingMe } from 'keepwake';
+// OR
+import { PingMe } from 'keepawake';
 
 // Initialize with your API key
 const pingMe = new PingMe({
@@ -113,7 +149,7 @@ pingMe.start();
 
 ```javascript
 const express = require('express');
-const { PingMe } = require('@ping-me/client');
+const { PingMe } = require('ping-me'); // or 'keep-server-alive' or 'keepwake' or 'keepawake'
 
 const app = express();
 const pingMe = new PingMe({
@@ -138,7 +174,7 @@ app.listen(3000, () => {
 
 ```javascript
 // pages/api/ping.js
-import { getInstance } from '@ping-me/client';
+import { getInstance } from 'ping-me'; // or 'keep-server-alive' or 'keepwake' or 'keepawake'
 
 export default function handler(req, res) {
   const pingMe = getInstance();
@@ -146,7 +182,7 @@ export default function handler(req, res) {
 }
 
 // pages/_app.js
-import { init } from '@ping-me/client';
+import { init } from 'ping-me'; // or 'keep-server-alive' or 'keepwake' or 'keepawake'
 import { useEffect } from 'react';
 
 export default function MyApp({ Component, pageProps }) {
@@ -201,6 +237,9 @@ ping-me/
 │   ├── client/           # Client library with simplified API
 │   ├── express/          # Express.js integration
 │   └── nextjs/           # Next.js integration
+│   ├── ping-me/          # Main package (auto-detects framework)
+│   ├── keep-server-alive/ # Alias package for ping-me
+│   └── keepwake/         # Alias package for ping-me
 └── README.md
 ```
 
@@ -291,38 +330,30 @@ Made with ❤️ by [@mreshank](https://github.com/mreshank)
 
 ### Can we install and use this from npm?
 
-Yes! All packages are designed to be published to npm. Once published, you can install them using npm, yarn, or pnpm:
+Yes! All packages are designed to be published to npm. You can install them using npm, yarn, or pnpm:
 
 ```bash
 # Install the main package (auto-detects your framework)
 npm install ping-me
+# OR one of our alternative package names
+npm install keep-server-alive
+npm install keepwake
+npm install keepawake
 
-# Or install specific packages
+# Or install specific framework adapters
 npm install @ping-me/core
 npm install @ping-me/express
 ```
 
-### Can we use it simply with npm i ping-me?
+### Which package name should I use?
 
-Yes! We've created a main `ping-me` package that automatically detects which framework you're using and provides the appropriate adapters. Simply install with:
+We provide four identical packages with different names:
+- `ping-me`: Our primary package name
+- `keep-server-alive`: A more descriptive alternative
+- `keepwake`: A short and sweet alternative
+- `keepawake`: Another concise alternative
 
-```bash
-npm install ping-me
-```
-
-And then import it in your code:
-
-```javascript
-// It auto-detects your framework
-const pingMe = require('ping-me');
-
-// Use with Express
-const app = require('express')();
-pingMe.withPingMe(app);
-
-// Or use directly
-pingMe.pingMe({ url: 'https://my-api.com' });
-```
+All four packages provide the exact same functionality, so you can choose whichever name best fits your project or personal preference!
 
 ### Which frameworks are supported?
 

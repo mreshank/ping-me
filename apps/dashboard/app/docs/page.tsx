@@ -189,7 +189,7 @@ export default function DocsPage() {
                   If you prefer not to add a dependency to your project, you can register your endpoints directly through our dashboard or API.
                 </p>
                 <ol className="list-decimal pl-6 space-y-2 text-gray-600 mb-6">
-                  <li>Sign up for an account at ping-me.app</li>
+                  <li>Sign up for an account at ping-me.eshank.tech</li>
                   <li>Navigate to the dashboard and add your endpoints</li>
                   <li>Configure your ping intervals and notification preferences</li>
                 </ol>

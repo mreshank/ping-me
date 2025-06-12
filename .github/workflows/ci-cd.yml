@@ -72,9 +72,24 @@ jobs:
         
       - name: Build packages
         run: pnpm run build
-        
-      - name: Publish packages
-        run: pnpm publish -r --access public --no-git-checks
+
+      - name: Publish main package
+        run: cd packages/ping-me && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish keep-server-alive alias
+        run: cd packages/keep-server-alive && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish keepwake alias
+        run: cd packages/keepwake && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish keepawake alias
+        run: cd packages/keepawake && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   

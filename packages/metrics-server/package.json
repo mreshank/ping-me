@@ -20,7 +20,7 @@
     "server",
     "monitor"
   ],
-  "author": "Reshank Maharaj",
+  "author": "Eshank Tyagi",
   "license": "MIT",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
