@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/dashboard",
+      "use": "@vercel/next",
+      "config": {
+        "buildCommand": "pnpm build",
+        "outputDirectory": ".next",
+        "rootDirectory": "apps/dashboard"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/apps/dashboard/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
