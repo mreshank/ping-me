@@ -1,71 +1,78 @@
-import { pingMe, createPingEndpoint } from "@ping-me/core";
-import type { Express, Request, Response } from "express";
+import { Express, Request, Response, NextFunction } from 'express';
+import { PingMe, PingMeOptions } from '@ping-me/client';
 
-export interface PingMeExpressOptions {
+export interface ExpressPingMeOptions extends PingMeOptions {
+  /**
+   * The route path for the ping endpoint (default: '/ping')
+   */
   route?: string;
-  interval?: number;
-  log?: boolean;
-  message?: string;
-  autoStart?: boolean;
-  apiKey?: string;
-  apiEndpoint?: string;
-  baseUrl?: string;
+  
+  /**
+   * Whether to automatically register the current service (default: true)
+   */
+  registerSelf?: boolean;
+  
+  /**
+   * A list of additional endpoints to monitor
+   */
+  endpoints?: string[];
 }
 
 /**
- * Express middleware for ping-me
- * Adds a ping endpoint and optionally starts pinging it
+ * Add Ping-Me to an Express application
  */
-export function withPingMe(
-  app: Express,
-  options: PingMeExpressOptions = {}
-) {
+export function withPingMe(app: Express, options: ExpressPingMeOptions): PingMe {
   const {
-    route = "/ping-me",
-    interval = 300000, // 5 minutes
-    log = true,
-    message = "Ping-Me: Express server is up and running",
-    autoStart = true,
-    apiKey,
-    apiEndpoint,
-    baseUrl,
+    route = '/ping',
+    registerSelf = true,
+    endpoints = [],
+    ...pingMeOptions
   } = options;
-
-  // Create the ping endpoint
-  app.get(route, (_req: Request, res: Response) => {
-    const response = createPingEndpoint({ message }).handler();
-    res.json(response);
+  
+  // Create a new PingMe instance
+  const pingMe = new PingMe(pingMeOptions);
+  
+  // Register the ping endpoint
+  app.get(route, (req: Request, res: Response) => {
+    const handler = pingMe.createPingHandler();
+    handler(req, res);
   });
-
-  if (autoStart) {
-    // Determine the full URL to ping
-    let pingUrl: string;
-    
-    if (baseUrl) {
-      // Use provided baseUrl
-      pingUrl = `${baseUrl.replace(/\/$/, '')}${route}`;
-    } else {
-      // Default to localhost:3000 if no baseUrl provided
-      pingUrl = `http://localhost:3000${route}`;
-    }
-    
-    // Start pinging
-    const stopPinging = pingMe({
-      url: pingUrl,
-      interval,
-      log: log ? console.log : () => {},
-      apiKey,
-      apiEndpoint,
-    });
-    
-    return {
-      stopPinging,
-      pingUrl,
-    };
+  
+  // Register this service if enabled
+  if (registerSelf) {
+    pingMe.registerSelf(route);
   }
   
-  return {
-    stopPinging: () => {},
-    pingUrl: baseUrl ? `${baseUrl.replace(/\/$/, '')}${route}` : `http://localhost:3000${route}`,
-  };
+  // Register additional endpoints
+  if (endpoints.length > 0) {
+    pingMe.register(endpoints);
+  }
+  
+  // Start pinging
+  pingMe.start();
+  
+  // Add the ping-me instance to the app for later reference
+  (app as any).pingMe = pingMe;
+  
+  return pingMe;
 }
+
+/**
+ * Middleware to add ping-me headers to responses
+ */
+export function pingMeHeaders(req: Request, res: Response, next: NextFunction): void {
+  res.setHeader('X-Powered-By', 'Ping-Me');
+  res.setHeader('X-Ping-Me-Version', '0.1.0');
+  next();
+}
+
+/**
+ * Create a ping middleware for Express
+ */
+export function createPingMiddleware(options: ExpressPingMeOptions = { apiKey: '' }): (req: Request, res: Response) => void {
+  const pingMe = new PingMe(options);
+  return pingMe.createPingHandler();
+}
+
+export { PingMe };
+export default withPingMe;

@@ -8,6 +8,11 @@
 
 # 🚀 Ping-Me
 
+<div align="center">
+  <h3>Keep Your Services Alive and Responsive</h3>
+  <p>A lightweight service to prevent your web applications from going to sleep due to inactivity.</p>
+</div>
+
 <p align="center">
   <a href="https://github.com/mreshank/ping-me">
     <img alt="GitHub stars" src="https://img.shields.io/github/stars/mreshank/ping-me?style=social">
@@ -53,184 +58,223 @@ Ping-Me makes sure your backend never sleeps, and if it tries, you know about it
 - 🛡️ **Abuse Protection**: Rate limiting, IP filtering, data-size capping
 - 🧩 **CLI Tool**: Bootstrap your server with pings instantly
 
+## 🌟 Features
+
+- **Prevent Cold Starts**: Keep your services warm and responsive by preventing them from going to sleep
+- **Customizable Intervals**: Set ping intervals from 1 minute to 1 hour
+- **Downtime Alerts**: Get notified when your services go down via email, Slack, or webhooks
+- **Performance Metrics**: Track response times and uptime metrics
+- **Simple Integration**: Easy integration with Node.js, Express, Next.js, and more
+- **Multi-Project Support**: Monitor multiple applications from one account
+
 ## 📦 Installation
 
-### Simple Installation (Auto-Detects Your Framework)
+### NPM
 
 ```bash
-# Install the main package
-npm install ping-me
+npm install @ping-me/client
 ```
 
-That's it! The `ping-me` package automatically detects which framework you're using and provides the appropriate adapters.
-
-### Framework-Specific Installation
-
-If you prefer to explicitly use a specific adapter:
+### Yarn
 
 ```bash
-# Install the core library
-npm install @ping-me/core
-
-# Or use the framework-specific adapter
-npm install @ping-me/express
-# npm install @ping-me/next
-# npm install @ping-me/fastify
-# npm install @ping-me/koa
-# npm install @ping-me/hono
+yarn add @ping-me/client
 ```
 
-### CLI Setup
+### pnpm
 
 ```bash
-npx ping-me init
-npx ping-me add express
+pnpm add @ping-me/client
 ```
 
-## 🧰 Usage
-
-### Auto-Detected Framework
+## 🚀 Quick Start
 
 ```javascript
-// Simply import ping-me and it auto-detects your framework
-const pingMe = require('ping-me');
+import { PingMe } from '@ping-me/client';
 
-// For Express apps
-const app = require('express')();
-pingMe.withPingMe(app);
-
-// Or use the core functionality directly
-pingMe.pingMe({
-  url: 'https://my-api.com/ping'
+// Initialize with your API key
+const pingMe = new PingMe({
+  apiKey: 'your-api-key-here',
 });
+
+// Register endpoints to keep alive
+pingMe.register([
+  'https://your-api.example.com',
+  'https://your-app.example.com',
+]);
+
+// Start the ping service
+pingMe.start();
 ```
 
-### Express
+## 🧩 Framework Integrations
+
+### Express.js
 
 ```javascript
 const express = require('express');
-const { withPingMe } = require('@ping-me/express');
+const { PingMe } = require('@ping-me/client');
 
 const app = express();
-
-// Add ping-me to your app
-withPingMe(app, {
-  route: '/ping-me',          // Custom route (default: /ping-me)
-  interval: 300000,           // 5 minutes
-  baseUrl: 'https://my-api.com', // Optional: specify exact URL
-  apiKey: 'your-api-key'      // Optional: for dashboard metrics
+const pingMe = new PingMe({
+  apiKey: 'your-api-key-here',
 });
 
-app.listen(3000);
+// Register the current service
+pingMe.registerSelf();
+
+// Create a ping endpoint
+app.get('/ping', pingMe.createPingHandler());
+
+// Start pinging
+pingMe.start();
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
 ```
 
 ### Next.js
 
 ```javascript
-// pages/api/ping-me.js
-import { createPingMeHandler } from '@ping-me/next';
+// pages/api/ping.js
+import { getInstance } from '@ping-me/client';
 
-export default createPingMeHandler();
+export default function handler(req, res) {
+  const pingMe = getInstance();
+  return pingMe.createPingHandler()(req, res);
+}
 
-// In your _app.js or a component
-import { usePingMe } from '@ping-me/next';
+// pages/_app.js
+import { init } from '@ping-me/client';
+import { useEffect } from 'react';
 
-function MyApp({ Component, pageProps }) {
-  // This will auto-ping your endpoint
-  const status = usePingMe({
-    interval: 300000, // 5 minutes
-    apiKey: process.env.PING_ME_API_KEY // Optional
-  });
-  
+export default function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    const pingMe = init({
+      apiKey: process.env.PING_ME_API_KEY,
+    });
+
+    pingMe.registerSelf();
+    pingMe.start();
+
+    return () => pingMe.stop();
+  }, []);
+
   return <Component {...pageProps} />;
 }
 ```
 
-### Core Usage
+## ⚙️ Configuration Options
 
 ```javascript
-import { pingMe } from '@ping-me/core';
-
-// Start pinging
-const stopPinging = pingMe({
-  url: 'https://my-api.com/ping',
-  interval: 300000, // 5 minutes
-  apiKey: 'your-api-key', // Optional
-  log: console.log     // Optional custom logger
+const pingMe = new PingMe({
+  // Your API key (required)
+  apiKey: 'your-api-key-here',
+  
+  // Ping interval in milliseconds (default: 5 minutes)
+  pingInterval: 300000,
+  
+  // Callback when a ping succeeds
+  onSuccess: (endpoint, responseTime) => {
+    console.log(`Successfully pinged ${endpoint} in ${responseTime}ms`);
+  },
+  
+  // Callback when a ping fails
+  onError: (error, endpoint) => {
+    console.error(`Error pinging ${endpoint}: ${error.message}`);
+  },
+  
+  // Whether to automatically start pinging (default: false)
+  autoStart: false
 });
-
-// Stop pinging later if needed
-stopPinging();
 ```
 
-## 📊 Dashboard
-
-A beautiful Next.js dashboard is available to monitor your backend services:
-
-- 📈 **Uptime Charts**: See your uptime over time
-- ⏱️ **Response Times**: Track latency trends
-- 💬 **Status Logs**: View ping history and errors
-- 🔔 **Alert Settings**: Configure notification preferences
-
-**[Try the Dashboard →](https://ping-me-dashboard.vercel.app)**
-
-## 🧑‍💻 API
-
-Track your metrics with the Ping-Me API:
-
-```bash
-# Ping Logging Endpoint
-POST https://ping-me-api.vercel.app/api/log
-Authorization: Bearer your-api-key
-{
-  "endpoint": "https://my-api.com",
-  "status": 200,
-  "responseTime": 123
-}
-
-# Get Metrics
-GET https://ping-me-api.vercel.app/api/metrics
-Authorization: Bearer your-api-key
-```
-
-## 🛠️ Project Structure
-
-This is a monorepo built with Turborepo and PNPM:
+## 🏗️ Project Structure
 
 ```
 ping-me/
 ├── apps/
-│   ├── dashboard/     ← Next.js 14 + Tailwind CSS dashboard
-│   ├── examples/      ← Example usage of ping-me
-│   └── api/           ← Serverless API routes
+│   └── dashboard/        # Web dashboard (Next.js)
 ├── packages/
-│   ├── ping-me/       ← Main package with auto-detection
-│   ├── core/          ← Framework-agnostic ping logic
-│   ├── cli/           ← CLI: npx ping-me init
-│   ├── express/       ← Express adapter
-│   ├── fastify/       ← Fastify adapter
-│   ├── next/          ← Next.js adapter
-│   ├── koa/           ← Koa adapter
-│   ├── hono/          ← Hono adapter
-│   └── metrics-server/ ← Metrics Server
+│   ├── core/             # Core ping functionality
+│   ├── client/           # Client library with simplified API
+│   ├── express/          # Express.js integration
+│   └── nextjs/           # Next.js integration
+└── README.md
 ```
+
+## 💻 Development
+
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mreshank/ping-me.git
+   cd ping-me
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Build all packages:
+   ```bash
+   pnpm run build
+   ```
+
+4. Start the development server:
+   ```bash
+   pnpm run dev
+   ```
+
+### Running Tests
+
+```bash
+pnpm run test
+```
+
+## 🚢 Deployment
+
+### NPM Packages
+
+The packages are deployed to NPM using GitHub Actions CI/CD pipeline.
+
+### Dashboard
+
+The dashboard is deployed to Vercel using GitHub Actions:
+
+1. Set up required secrets in your GitHub repository:
+   - `VERCEL_TOKEN`
+   - `VERCEL_ORG_ID`
+   - `VERCEL_PROJECT_ID`
+
+2. Push to the main branch to trigger deployment.
+
+### Backend API
+
+The backend API can be deployed to any platform of your choice. We recommend:
+
+- [Render](https://render.com/)
+- [Railway](https://railway.app/)
+- [Vercel](https://vercel.com/)
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+Contributions are welcome! Please check out our [Contributing Guide](CONTRIBUTING.md) for details.
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Install dependencies: `pnpm install`
-4. Make your changes
-5. Run tests: `pnpm test`
-6. Commit your changes: `git commit -m 'Add some amazing feature'`
-7. Push to the branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
+## 💖 Support
+
+If you find this project useful, please consider supporting it:
+
+- [GitHub Sponsors](https://github.com/sponsors/mreshank)
+- [Buy Me a Coffee](https://www.buymeacoffee.com/mreshank)
+- Star the repository ⭐
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 💖 Sponsorship
 
