@@ -1,7 +1,7 @@
 import { PingMe as CorePingMe, PingMeOptions, PingMeStatus, PingResult } from '@ping-me/core';
 
 // Re-export the core types
-export { PingMeOptions, PingMeStatus, PingResult };
+export type { PingMeOptions, PingMeStatus, PingResult };
 
 /**
  * PingMe Client - A wrapper around the core PingMe functionality with additional features

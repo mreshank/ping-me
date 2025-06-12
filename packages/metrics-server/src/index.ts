@@ -1,9 +1,37 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import { rateLimit } from "express-rate-limit";
 import { randomUUID } from "crypto";
+import nodemailer from "nodemailer";
+
+// Types
+interface UserDocument extends mongoose.Document {
+  email: string;
+  apiKey: string;
+  createdAt: Date;
+  settings: {
+    pingInterval: number;
+    alertEnabled: boolean;
+    alertThreshold: number;
+    alertEmail: string;
+  };
+}
+
+interface PingLogDocument extends mongoose.Document {
+  apiKey: string;
+  endpoint: string;
+  timestamp: Date;
+  status: number;
+  responseTime: number;
+  error?: string;
+}
+
+interface AuthenticatedRequest extends Request {
+  user?: UserDocument;
+  isAdmin?: boolean;
+}
 
 // Load environment variables
 dotenv.config();
@@ -43,7 +71,9 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   settings: {
     pingInterval: { type: Number, default: 300000 }, // 5 minutes
-    alertEnabled: { type: Boolean, default: false }
+    alertEnabled: { type: Boolean, default: false },
+    alertThreshold: { type: Number, default: 500 }, // Alert if response time > 500ms
+    alertEmail: { type: String }
   }
 });
 
@@ -57,11 +87,54 @@ const logSchema = new mongoose.Schema({
 });
 
 // Create models
-const User = mongoose.model("User", userSchema);
-const PingLog = mongoose.model("PingLog", logSchema);
+const User = mongoose.model<UserDocument>("User", userSchema);
+const PingLog = mongoose.model<PingLogDocument>("PingLog", logSchema);
+
+// Email setup for alerts
+const setupMailTransport = () => {
+  if (!process.env.SMTP_HOST) return null;
+  
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_PORT === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+};
+
+const mailTransport = setupMailTransport();
+
+// Send alert email
+const sendAlertEmail = async (email: string, endpoint: string, status: number, responseTime: number) => {
+  if (!mailTransport) return;
+  
+  try {
+    await mailTransport.sendMail({
+      from: process.env.FROM_EMAIL || "alerts@ping-me.com",
+      to: email,
+      subject: `🚨 Alert: ${endpoint} is experiencing issues`,
+      html: `
+        <h1>Ping-Me Alert</h1>
+        <p>Your endpoint <strong>${endpoint}</strong> is experiencing issues:</p>
+        <ul>
+          <li>Status code: ${status}</li>
+          <li>Response time: ${responseTime}ms</li>
+          <li>Time: ${new Date().toLocaleString()}</li>
+        </ul>
+        <p>Please check your service.</p>
+      `
+    });
+    console.log(`Alert email sent to ${email} for ${endpoint}`);
+  } catch (error) {
+    console.error("Failed to send alert email:", error);
+  }
+};
 
 // Middleware to validate API key
-const validateApiKey = async (req, res, next) => {
+const validateApiKey = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const apiKey = req.headers.authorization?.split("Bearer ")[1];
   
   if (!apiKey) {
@@ -69,6 +142,12 @@ const validateApiKey = async (req, res, next) => {
   }
   
   try {
+    // Check if this is the admin API key
+    if (process.env.ADMIN_API_KEY && apiKey === process.env.ADMIN_API_KEY) {
+      req.isAdmin = true;
+      return next();
+    }
+    
     const user = await User.findOne({ apiKey });
     
     if (!user) {
@@ -84,16 +163,38 @@ const validateApiKey = async (req, res, next) => {
   }
 };
 
+// Admin middleware
+const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.isAdmin) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
+};
+
 // API routes
-app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+app.get("/api/health", (_, res: Response) => {
+  // Enhanced health check with system info
+  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || "1.0.0",
+    uptime: process.uptime(),
+    database: {
+      status: dbStatus,
+      name: mongoose.connection.name
+    },
+    environment: process.env.NODE_ENV || "development",
+    alertsEnabled: !!mailTransport
+  });
 });
 
 // Log a ping
-app.post("/api/log", validateApiKey, async (req, res) => {
+app.post("/api/log", validateApiKey, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { endpoint, status, responseTime, timestamp, error } = req.body;
-    const apiKey = req.user.apiKey;
+    const apiKey = req.user?.apiKey;
     
     // Validate required fields
     if (!endpoint || status === undefined || responseTime === undefined) {
@@ -109,6 +210,21 @@ app.post("/api/log", validateApiKey, async (req, res) => {
       timestamp: timestamp ? new Date(timestamp) : new Date(),
       error
     });
+    
+    // Check if alert should be sent
+    if (req.user?.settings.alertEnabled && req.user.settings.alertEmail) {
+      const shouldAlert = 
+        (status >= 400 || responseTime > req.user.settings.alertThreshold);
+      
+      if (shouldAlert) {
+        await sendAlertEmail(
+          req.user.settings.alertEmail,
+          endpoint,
+          status,
+          responseTime
+        );
+      }
+    }
     
     // Delete old logs if there are too many for this user and endpoint
     const MAX_LOGS_PER_ENDPOINT = process.env.MAX_LOGS_PER_ENDPOINT || 1000;
@@ -133,12 +249,12 @@ app.post("/api/log", validateApiKey, async (req, res) => {
 });
 
 // Get metrics for user
-app.get("/api/metrics", validateApiKey, async (req, res) => {
+app.get("/api/metrics", validateApiKey, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const apiKey = req.user.apiKey;
+    const apiKey = req.user?.apiKey;
     const { endpoint, limit = 100, since } = req.query;
     
-    const query = { apiKey };
+    const query: any = { apiKey };
     
     // Filter by endpoint if provided
     if (endpoint) {
@@ -147,7 +263,7 @@ app.get("/api/metrics", validateApiKey, async (req, res) => {
     
     // Filter by time range if provided
     if (since) {
-      query.timestamp = { $gte: new Date(since) };
+      query.timestamp = { $gte: new Date(since as string) };
     }
     
     // Get logs with pagination
@@ -189,20 +305,24 @@ app.get("/api/metrics", validateApiKey, async (req, res) => {
 });
 
 // User settings
-app.get("/api/settings", validateApiKey, async (req, res) => {
+app.get("/api/settings", validateApiKey, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
-    res.json({ settings: user.settings });
+    res.json({ settings: user?.settings });
   } catch (error) {
     console.error("Error fetching settings:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-app.post("/api/settings", validateApiKey, async (req, res) => {
+app.post("/api/settings", validateApiKey, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { pingInterval, alertEnabled } = req.body;
+    const { pingInterval, alertEnabled, alertThreshold, alertEmail } = req.body;
     const user = req.user;
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     
     // Update settings
     if (pingInterval !== undefined) {
@@ -211,6 +331,14 @@ app.post("/api/settings", validateApiKey, async (req, res) => {
     
     if (alertEnabled !== undefined) {
       user.settings.alertEnabled = alertEnabled;
+    }
+    
+    if (alertThreshold !== undefined) {
+      user.settings.alertThreshold = alertThreshold;
+    }
+    
+    if (alertEmail !== undefined) {
+      user.settings.alertEmail = alertEmail;
     }
     
     await user.save();
@@ -223,7 +351,7 @@ app.post("/api/settings", validateApiKey, async (req, res) => {
 });
 
 // Create a new API key (requires a unique email)
-app.post("/api/users", async (req, res) => {
+app.post("/api/users", async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     
@@ -246,7 +374,8 @@ app.post("/api/users", async (req, res) => {
       apiKey,
       settings: {
         pingInterval: 300000,
-        alertEnabled: false
+        alertEnabled: false,
+        alertThreshold: 500
       }
     });
     
@@ -261,9 +390,14 @@ app.post("/api/users", async (req, res) => {
 });
 
 // Regenerate API key
-app.post("/api/regenerate-key", validateApiKey, async (req, res) => {
+app.post("/api/regenerate-key", validateApiKey, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
     const newApiKey = randomUUID();
     
     user.apiKey = newApiKey;
@@ -272,6 +406,41 @@ app.post("/api/regenerate-key", validateApiKey, async (req, res) => {
     res.json({ apiKey: newApiKey });
   } catch (error) {
     console.error("Error regenerating API key:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Delete user (admin only)
+app.delete("/api/users/:email", validateApiKey, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { email } = req.params;
+    
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Delete all logs for this user
+    await PingLog.deleteMany({ apiKey: user.apiKey });
+    
+    // Delete the user
+    await user.deleteOne();
+    
+    res.json({ success: true, message: "User and all associated data deleted" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get all users (admin only)
+app.get("/api/users", validateApiKey, requireAdmin, async (_: Request, res: Response) => {
+  try {
+    const users = await User.find({}, { apiKey: 0 });
+    res.json({ users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

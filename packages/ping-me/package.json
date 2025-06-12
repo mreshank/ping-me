@@ -6,7 +6,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "ping-me": "./dist/cli.js",
+    "ping-me": "./dist/index.js",
     "keep-server-alive": "./dist/cli.js", 
     "keepwake": "./dist/cli.js",
     "keepawake": "./dist/cli.js"
@@ -15,9 +15,10 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/cli.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts src/cli.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run",
     "clean": "rm -rf dist",
     "postinstall": "node scripts/postinstall.js"
   },
@@ -37,21 +38,21 @@
   "license": "MIT",
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
-    "@ping-me/core": "workspace:*",
+    "@ping-me/core": "file:../core",
     "node-fetch": "^3.3.2",
     "commander": "^11.1.0"
   },
   "optionalDependencies": {
-    "@ping-me/express": "workspace:*",
-    "@ping-me/next": "workspace:*",
-    "@ping-me/fastify": "workspace:*",
-    "@ping-me/koa": "workspace:*",
-    "@ping-me/hono": "workspace:*"
+    "@ping-me/express": "file:../express",
+    "@ping-me/next": "file:../next",
+    "@ping-me/fastify": "file:../fastify",
+    "@ping-me/koa": "file:../koa",
+    "@ping-me/hono": "file:../hono"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
   },
   "repository": {
     "type": "git",

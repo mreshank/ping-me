@@ -88,4 +88,4 @@ export function withPingMe(
 }
 
 // Alias for backward compatibility
-export const withPingMeFastify = withPingMe;
+export const withPingMeFastify = withPingMe; 

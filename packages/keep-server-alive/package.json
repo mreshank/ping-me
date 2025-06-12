@@ -24,7 +24,7 @@
   "author": "Eshank Tyagi",
   "license": "MIT",
   "dependencies": {
-    "ping-me": "^1.0.0"
+    "ping-me": "file:../ping-me"
   },
   "bin": {
     "keep-server-alive": "./node_modules/ping-me/dist/cli.js",

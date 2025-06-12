@@ -37,7 +37,7 @@
     "express"
   ],
   "dependencies": {
-    "@ping-me/client": "^0.1.0"
+    "@ping-me/client": "file:../client"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
