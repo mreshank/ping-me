@@ -1,0 +1,530 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  /* Base styles */
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+}
+
+/* Glass morphism effects */
+.glass {
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dark .glass {
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  background: rgba(20, 20, 20, 0.7);
+}
+
+/* Form controls */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  border-radius: 0.375rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: hsl(var(--border));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  border-color: hsl(var(--primary));
+  outline: none;
+  box-shadow: 0 0 0 1.5px hsl(var(--primary));
+}
+
+/* Button styles */
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  outline: none;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+  position: relative;
+}
+.btn:focus {
+  box-shadow:
+    0 0 0 2px hsl(var(--primary)),
+    0 0 0 4px hsl(var(--background));
+  z-index: 1;
+}
+
+.btn-primary {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+.btn-primary:focus {
+  box-shadow:
+    0 0 0 2px hsl(var(--primary)),
+    0 0 0 4px hsl(var(--background));
+}
+
+.btn-secondary {
+  color: hsl(var(--secondary-foreground));
+  background-color: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: hsl(var(--secondary) / 0.8);
+}
+.btn-secondary:focus {
+  box-shadow:
+    0 0 0 2px hsl(var(--primary)),
+    0 0 0 4px hsl(var(--background));
+}
+
+.btn-danger {
+  color: hsl(var(--destructive-foreground));
+  background-color: hsl(var(--destructive));
+  transition: background-color 0.2s;
+}
+.btn-danger:hover {
+  background-color: hsl(var(--destructive) / 0.9);
+}
+.btn-danger:focus {
+  box-shadow:
+    0 0 0 2px hsl(var(--destructive)),
+    0 0 0 4px hsl(var(--background));
+}
+
+/* Dashboard cards */
+.metric-card {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border-radius: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+@media (min-width: 640px) {
+  .metric-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Code blocks */
+pre {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.875rem;
+  background-color: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+code {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.875rem;
+  background-color: hsl(var(--muted));
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  border-radius: 0.375rem;
+}
+
+/* Table styles */
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: hsl(var(--border));
+}
+.table thead {
+  background-color: hsl(var(--muted));
+}
+.table th {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.table tbody {
+  background-color: hsl(var(--card));
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: hsl(var(--border));
+}
+.table td {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: hsl(var(--card-foreground));
+}
+
+/* Status indicators */
+.status-up {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  display: inline-flex;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: #bbf7d0;
+  color: #166534;
+}
+.dark .status-up {
+  background-color: #166534;
+  color: #bbf7d0;
+}
+
+.status-down {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  display: inline-flex;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: #fecaca;
+  color: #991b1b;
+}
+.dark .status-down {
+  background-color: #991b1b;
+  color: #fecaca;
+}
+
+/* Loading spinner */
+.spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 9999px;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  border-top-style: solid;
+  border-bottom-style: solid;
+  border-top-color: hsl(var(--primary));
+  border-bottom-color: hsl(var(--primary));
+  border-right: 2px solid transparent;
+  border-left: 2px solid transparent;
+  box-sizing: border-box;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Animation classes */
+.animate-in {
+  animation: animateIn 0.3s ease-in-out;
+}
+
+@keyframes animateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Neomorphism effects */
+.neomorphism {
+  background-color: hsl(var(--secondary));
+  border-radius: 0.75rem;
+  box-shadow:
+    5px 5px 10px rgba(0, 0, 0, 0.1),
+    -5px -5px 10px rgba(255, 255, 255, 0.7);
+}
+.dark .neomorphism {
+  box-shadow:
+    5px 5px 10px rgba(0, 0, 0, 0.7),
+    -5px -5px 10px rgba(255, 255, 255, 0.05);
+}
+
+/* Documentation specific styles */
+.docs-content {
+  max-width: none;
+}
+.docs-content :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+.docs-content a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+.docs-content a:hover {
+  text-decoration: underline;
+}
+.docs-content code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-radius: 0.375rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+}
+.docs-content pre {
+  background-color: hsl(var(--secondary));
+  border-width: 1px;
+  border-style: solid;
+  border-color: hsl(var(--border));
+}
+.docs-content strong {
+  color: hsl(var(--foreground));
+}
+.docs-content blockquote {
+  border-left-width: 4px;
+  border-left-style: solid;
+  border-left-color: hsl(var(--primary));
+  color: hsl(var(--muted-foreground));
+  padding-left: 1rem;
+  font-style: italic;
+}
+.docs-content li::marker {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Sidebar navigation */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+}
+
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+}
+
+.sidebar-group-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-link {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  transition: color 0.2s;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  display: block;
+}
+.sidebar-link:hover {
+  color: hsl(var(--primary));
+}
+.sidebar-link.active {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+/* Code syntax highlighting */
+.code-highlight {
+  background-color: hsl(var(--secondary));
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: hsl(var(--border));
+}
+
+.code-line {
+  display: block;
+}
+
+.code-comment {
+  color: hsl(var(--muted-foreground));
+}
+
+.code-keyword {
+  color: #a21caf;
+}
+.dark .code-keyword {
+  color: #c084fc;
+}
+
+.code-string {
+  color: #22c55e;
+}
+.dark .code-string {
+  color: #86efac;
+}
+
+.code-function {
+  color: #2563eb;
+}
+.dark .code-function {
+  color: #60a5fa;
+}
+
+.code-number {
+  color: #f59e42;
+}
+.dark .code-number {
+  color: #fbbf24;
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    to right,
+    rgb(var(--primary)),
+    rgb(var(--primary) / 0.8)
+  );
+}
+
+.hero-gradient::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")
+    repeat;
+  opacity: 0.3;
+}

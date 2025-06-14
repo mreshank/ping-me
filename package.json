@@ -28,12 +28,13 @@
   "license": "MIT",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
-    "turbo": "^2.5.4",
-    "typescript": "^5.8.3",
-    "tsx": "^4.19.4",
-    "vitest": "^3.2.3",
+    "@changesets/cli": "^2.26.2",
+    "@eslint/eslintrc": "^3.3.1",
     "eslint": "^9.28.0",
     "prettier": "^3.5.3",
-    "@changesets/cli": "^2.26.2"
+    "tsx": "^4.19.4",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
   }
 }

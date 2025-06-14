@@ -1,0 +1,10 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({
+    name: "Ping-Me API",
+    version: "1.0.0",
+    status: "online",
+    endpoints: ["/api/ping", "/api/status", "/api/endpoints"]
+  });
+} 

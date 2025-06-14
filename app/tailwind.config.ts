@@ -1,10 +1,24 @@
 // tailwind.config.js - Ping-Me Design System (TailwindCSS v4)
 
-import plugin from "tailwindcss/plugin";
+// import plugin from "tailwindcss/plugin";
 
-module.exports = {
-  darkMode: "class",
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: ["class"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        xxl: "1400px",
+      },
+    },
     extend: {
       colors: {
         // Core Backgrounds
@@ -64,10 +78,61 @@ module.exports = {
         "pm-error": "#ff4b55",
         "pm-warning": "#ffb020",
         "pm-info": "#2898ec",
+
+        // Test Values for TailwindCSS
+        border: "rgb(var(--border) / <alpha-value>)",
+        input: "rgb(var(--input) / <alpha-value>)",
+        ring: "rgb(var(--ring) / <alpha-value>)",
+        background: "rgb(var(--background) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
+        primary: {
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
+        },
+        secondary: {
+          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
+          foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "rgb(var(--destructive) / <alpha-value>)",
+          foreground: "rgb(var(--destructive-foreground) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
+          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
+        },
+        accent: {
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
+        },
+        popover: {
+          DEFAULT: "rgb(var(--popover) / <alpha-value>)",
+          foreground: "rgb(var(--popover-foreground) / <alpha-value>)",
+        },
+        card: {
+          DEFAULT: "rgb(var(--card) / <alpha-value>)",
+          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
+        },
+        "brand-blue": {
+          50: "#e6f0ff",
+          100: "#bdd6ff",
+          200: "#94baff",
+          300: "#6a9eff",
+          400: "#4182ff",
+          500: "#1766ff",
+          600: "#0e5aff",
+          700: "#004ff2",
+          800: "#0047e5",
+          900: "#0033cc",
+        },
       },
       boxShadow: {
         "pm-glow": "0 0 20px rgba(154, 106, 255, 0.4)",
         "pm-glow-light": "0 0 20px rgba(98, 54, 255, 0.4)",
+
+        // Test Values for TailwindCSS
+        soft: "0 2px 10px rgba(0, 0, 0, 0.05)",
+        card: "0 4px 8px rgba(0, 0, 0, 0.08)",
       },
       // backgroundImage: {
       //   'pm-gradient-dark': 'linear-gradient(135deg, #13b0f4, #9a6aff)',
@@ -91,274 +156,79 @@ module.exports = {
           "')",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui"],
-        mono: ["Fira Code", "monospace"],
+        sans: [
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+        mono: [
+          "Fira Code",
+          "JetBrains Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "Courier New",
+          "monospace",
+        ],
       },
       borderRadius: {
         xl: "1rem",
         "2xl": "1.5rem",
         "3xl": "2rem",
+
+        // Test Values for TailwindCSS
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
+
       transitionDuration: {
         0: "0ms",
         2000: "2000ms",
       },
+
+      animation: {
+        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
     },
   },
   plugins: [
-    plugin(({ addUtilities }) => {
-      addUtilities({
-        ".pm-grain": {
-          backgroundImage: "url('/grain-dark.svg')",
-          mixBlendMode: "overlay",
-          opacity: "0.05",
-        },
-        ".pm-glass": {
-          backdropFilter: "blur(12px)",
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-        },
-      });
-    }),
+    // plugin(({ addUtilities }) => {
+    //   addUtilities({
+    //     ".pm-grain": {
+    //       backgroundImage: "url('/grain-dark.svg')",
+    //       mixBlendMode: "overlay",
+    //       opacity: "0.05",
+    //     },
+    //     ".pm-glass": {
+    //       backdropFilter: "blur(12px)",
+    //       backgroundColor: "rgba(255, 255, 255, 0.05)",
+    //     },
+    //   });
+    // }),
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
   ],
 };
-
-
-
-
-
-
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  darkMode: ["class"],
-  content: [
-    './app/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    '../dashboard/app/**/*.{js,ts,jsx,tsx}',
-  ],
-  theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-      colors: {
-        border: "rgb(var(--border) / <alpha-value>)",
-        input: "rgb(var(--input) / <alpha-value>)",
-        ring: "rgb(var(--ring) / <alpha-value>)",
-        background: "rgb(var(--background) / <alpha-value>)",
-        foreground: "rgb(var(--foreground) / <alpha-value>)",
-        primary: {
-          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
-          foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
-        },
-        secondary: {
-          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
-          foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
-        },
-        destructive: {
-          DEFAULT: "rgb(var(--destructive) / <alpha-value>)",
-          foreground: "rgb(var(--destructive-foreground) / <alpha-value>)",
-        },
-        muted: {
-          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
-          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
-        },
-        accent: {
-          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
-          foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
-        },
-        popover: {
-          DEFAULT: "rgb(var(--popover) / <alpha-value>)",
-          foreground: "rgb(var(--popover-foreground) / <alpha-value>)",
-        },
-        card: {
-          DEFAULT: "rgb(var(--card) / <alpha-value>)",
-          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: [
-          'Inter',
-          'ui-sans-serif',
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif',
-        ],
-        mono: [
-          'JetBrains Mono',
-          'ui-monospace',
-          'SFMono-Regular',
-          'Menlo',
-          'Monaco',
-          'Consolas',
-          'Liberation Mono',
-          'Courier New',
-          'monospace',
-        ],
-      },
-      boxShadow: {
-        'soft': '0 2px 10px rgba(0, 0, 0, 0.05)',
-        'card': '0 4px 8px rgba(0, 0, 0, 0.08)',
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-      },
-    },
-  },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
-} 
-
-
-
-
-
-
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  darkMode: ["class"],
-  content: [
-    './app/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-  ],
-  theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-      colors: {
-        border: "rgb(var(--border) / <alpha-value>)",
-        input: "rgb(var(--input) / <alpha-value>)",
-        ring: "rgb(var(--ring) / <alpha-value>)",
-        background: "rgb(var(--background) / <alpha-value>)",
-        foreground: "rgb(var(--foreground) / <alpha-value>)",
-        primary: {
-          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
-          foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
-        },
-        secondary: {
-          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
-          foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
-        },
-        destructive: {
-          DEFAULT: "rgb(var(--destructive) / <alpha-value>)",
-          foreground: "rgb(var(--destructive-foreground) / <alpha-value>)",
-        },
-        muted: {
-          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
-          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
-        },
-        accent: {
-          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
-          foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
-        },
-        popover: {
-          DEFAULT: "rgb(var(--popover) / <alpha-value>)",
-          foreground: "rgb(var(--popover-foreground) / <alpha-value>)",
-        },
-        card: {
-          DEFAULT: "rgb(var(--card) / <alpha-value>)",
-          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
-        },
-        'brand-blue': {
-          50: '#e6f0ff',
-          100: '#bdd6ff',
-          200: '#94baff',
-          300: '#6a9eff',
-          400: '#4182ff',
-          500: '#1766ff',
-          600: '#0e5aff',
-          700: '#004ff2',
-          800: '#0047e5',
-          900: '#0033cc',
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: [
-          'Inter',
-          'ui-sans-serif',
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif',
-        ],
-        mono: [
-          'JetBrains Mono',
-          'ui-monospace',
-          'SFMono-Regular',
-          'Menlo',
-          'Monaco',
-          'Consolas',
-          'Liberation Mono',
-          'Courier New',
-          'monospace',
-        ],
-      },
-      boxShadow: {
-        'soft': '0 2px 10px rgba(0, 0, 0, 0.05)',
-        'card': '0 4px 8px rgba(0, 0, 0, 0.08)',
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-      },
-    },
-  },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
-} 
